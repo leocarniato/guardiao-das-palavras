@@ -47,7 +47,13 @@ export class UIController {
   // Atualiza as estatísticas exibidas no topo (moedas, nível, mascote, tema e foto de perfil)
   updateHeaderStats() {
     const activeMascot = this.game.getActiveMascot();
-    const playerData = this.game.playerData;
+    const playerData = this.game.playerData || {
+      name: 'Criar Perfil / Login',
+      coins: 0,
+      gems: 0,
+      level: 1,
+      profilePhoto: null
+    };
 
     // Aplica o Tema Visual Completo do Mascote no Fundo da Aplicação
     if (activeMascot && activeMascot.bgGradient) {
@@ -55,10 +61,10 @@ export class UIController {
       document.documentElement.style.setProperty('--neon-glow', activeMascot.neonColor || '#10B981');
     }
 
-    // Exibe a Foto de Perfil da WebCam no Header se existir (Avatar redondo 42x42px)
+    // Exibe a Foto de Perfil da WebCam no Header se existir
     const userPhotoEl = document.getElementById('header-user-photo');
     if (userPhotoEl) {
-      if (playerData.profilePhoto) {
+      if (playerData && playerData.profilePhoto) {
         userPhotoEl.src = playerData.profilePhoto;
         userPhotoEl.style.width = '42px';
         userPhotoEl.style.height = '42px';
@@ -73,7 +79,7 @@ export class UIController {
     // Exibe o Nome do Perfil Ativo no Header
     const userNameEl = document.getElementById('header-user-name');
     if (userNameEl) {
-      userNameEl.textContent = `👤 ${playerData.name || 'Pedro'}`;
+      userNameEl.textContent = this.game.playerData ? `👤 ${playerData.name}` : `👤 Entrar / Criar Perfil`;
     }
 
     // Atualiza BGM de acordo com o tema do Mascote
@@ -82,13 +88,13 @@ export class UIController {
     }
 
     const coinEls = document.querySelectorAll('.global-coins-count');
-    coinEls.forEach(el => el.textContent = playerData.coins);
+    coinEls.forEach(el => el.textContent = playerData.coins || 0);
 
     const gemEls = document.querySelectorAll('.global-gems-count');
     gemEls.forEach(el => el.textContent = playerData.gems || 0);
 
     const levelEls = document.querySelectorAll('.global-player-level');
-    levelEls.forEach(el => el.textContent = playerData.level);
+    levelEls.forEach(el => el.textContent = playerData.level || 1);
 
     const mascotEls = document.querySelectorAll('.global-active-mascot');
     mascotEls.forEach(el => {

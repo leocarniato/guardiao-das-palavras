@@ -16,8 +16,9 @@ export class ParentReport {
   }
 
   // Gera o HTML completo do relatório dos pais
-  renderReport(playerData, categories) {
-    const stats = playerData.stats || {};
+  renderReport(playerData, categories, allProfiles = []) {
+    const pData = playerData || { level: 1, coins: 0, stats: {} };
+    const stats = pData.stats || {};
     let totalAttempts = 0;
     let totalCorrect = 0;
 
@@ -160,11 +161,11 @@ export class ParentReport {
             <span class="summary-label">Palavras Acertadas</span>
           </div>
           <div class="summary-card">
-            <span class="summary-number">${playerData.level}</span>
+            <span class="summary-number">${pData.level || 1}</span>
             <span class="summary-label">Nível de Sabedoria</span>
           </div>
           <div class="summary-card">
-            <span class="summary-number">${playerData.coins} 🪙</span>
+            <span class="summary-number">${pData.coins || 0} 🪙</span>
             <span class="summary-label">Moedas Conquistadas</span>
           </div>
         </div>
