@@ -298,6 +298,15 @@ export class GameEngine {
     return true;
   }
 
+  clearProfilePassword(profileId) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+    delete profile.passwordHash;
+    delete profile.password;
+    this.savePlayerData();
+    return true;
+  }
+
   async selectProfile(profileId, inputPassword) {
     if (!this.profilesData.profiles[profileId]) return false;
     

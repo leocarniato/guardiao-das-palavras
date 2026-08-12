@@ -127,6 +127,27 @@ export class ParentReport {
       `;
     }
 
+    const passwordManagerHTML = (allProfiles && allProfiles.length > 0) ? `
+      <div style="margin-top: 32px; background: rgba(30, 41, 59, 0.7); border: 2px solid #38BDF8; border-radius: 24px; padding: 24px;">
+        <h3 class="section-title" style="margin-bottom: 12px; color: #F59E0B; font-family: 'Orbitron', sans-serif;">🔑 Controle de Senhas dos Pais</h3>
+        <p style="color: #94A3B8; font-size: 0.95rem; margin-bottom: 16px;">Como responsável, você tem controle total para redefinir ou criar uma nova senha para a criança se ela esquecer:</p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${allProfiles.map(p => `
+            <div style="display: flex; align-items: center; justify-content: space-between; background: #020617; border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 18px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <strong style="color: #FFF; font-size: 1.1rem; font-family: 'Plus Jakarta Sans', sans-serif;">👤 ${p.name}</strong>
+                <span style="font-size: 0.85rem; color: ${p.passwordHash ? '#34D399' : '#F59E0B'}; margin-left: 8px; font-weight: 700;">${p.passwordHash ? '🔒 Protegido com Senha' : '⚠️ Sem Senha'}</span>
+              </div>
+              <button class="btn btn-3d btn-warning btn-parent-reset-password" data-id="${p.id}" data-name="${p.name}">
+                🔄 Redefinir Senha
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
     return `
       <div class="parent-dashboard">
         <div class="dashboard-summary">
@@ -154,6 +175,8 @@ export class ParentReport {
         <div class="report-grid">
           ${categoryStatsHTML}
         </div>
+
+        ${passwordManagerHTML}
       </div>
     `;
   }

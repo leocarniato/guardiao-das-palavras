@@ -778,8 +778,21 @@ export class UIController {
   // Renderiza o Painel dos Pais
   renderParentPanel(containerEl) {
     if (!containerEl) return;
-    const html = parentReport.renderReport(this.game.playerData, this.game.categories);
+    const html = parentReport.renderReport(this.game.playerData, this.game.categories, this.game.getProfiles());
     containerEl.innerHTML = html;
+
+    containerEl.querySelectorAll('.btn-parent-reset-password').forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const newPwd = prompt(`Digite a nova senha para o perfil de ${name}:`);
+        if (newPwd && newPwd.trim()) {
+          await this.game.setProfilePassword(id, newPwd.trim());
+          alert(`🎉 Senha do perfil de ${name} alterada com sucesso!`);
+          this.renderParentPanel(containerEl);
+        }
+      };
+    });
   }
 
   // Efeito de Confetes no Canvas HTML5
@@ -1073,6 +1086,18 @@ export class UIController {
     if (btnCancel) {
       btnCancel.onclick = () => {
         pwdModal.classList.remove('active');
+      };
+    }
+
+    const btnForgot = document.getElementById('btn-forgot-password');
+    if (btnForgot) {
+      btnForgot.onclick = () => {
+        pwdModal.classList.remove('active');
+        const profileModal = document.getElementById('profile-modal');
+        if (profileModal) profileModal.classList.remove('active');
+        this.renderParentPanel(document.getElementById('parent-panel-container'));
+        this.showScreen('parent-screen');
+        alert(`💡 Redirecionado para o Painel dos Pais! Lá você pode redefinir a senha do perfil de ${profile.name} sem perder o progresso.`);
       };
     }
 
