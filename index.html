@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardião das Palavras - Jogo Educativo de Ortografia</title>
+  
+  <!-- Google Fonts: Orbitron & Plus Jakarta Sans (Sleek AAA Gamer Aesthetics) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Estilos Customizados -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Canvas de Confetes HTML5 em Overlay -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div id="app">
+
+    <!-- Header Global de Status (Sleek AAA Gamer Navigation) -->
+    <header class="global-header">
+      <div class="brand-logo" id="btn-brand-home">
+        <span class="logo-icon">⚡</span>
+        <h1>GUARDIÃO DAS PALAVRAS</h1>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-pill profile" id="btn-header-profile" title="Área de Jogadores / Trocar Perfil">
+          <img id="header-user-photo" class="header-user-photo" style="display: none;" alt="Foto de Perfil" />
+          <span id="header-user-name" class="header-user-name">👤 Pedro</span>
+        </div>
+
+        <div class="stat-pill level" title="Nível do Jogador">
+          <span>⭐ NÍV</span>
+          <span class="global-player-level">1</span>
+        </div>
+
+        <div class="stat-pill coins" title="Moedas Conquistadas">
+          <span>🪙</span>
+          <span class="global-coins-count">0</span>
+        </div>
+
+        <div class="stat-pill gems" title="Gemas Secretas">
+          <span>💎</span>
+          <span class="global-gems-count">0</span>
+        </div>
+
+        <div class="stat-pill gallery" id="btn-header-gallery" title="Galeria de Fotos Salvas">
+          <span>🖼️ Fotos</span>
+        </div>
+
+        <div class="stat-pill mascot" id="btn-header-shop" title="Mascote Equipado">
+          <span class="global-active-mascot">🕷️ Cyber Spider</span>
+        </div>
+
+        <div class="stat-pill bgm-toggle" id="btn-toggle-bgm" title="Música de Fundo">
+          <span class="bgm-icon">🎵 BGM</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- TELA 1: MENU PRINCIPAL (#menu-screen) -->
+    <main id="menu-screen" class="screen active">
+      <div class="hero-section">
+        <div class="hero-mascot-container">
+          <span class="hero-mascot-icon">🕷️</span>
+          <span class="hero-sparkles">⚡</span>
+        </div>
+        <h2 class="hero-title">Liga dos Campeões da Ortografia!</h2>
+        <p class="hero-subtitle">
+          Monte seu time de heróis, vença as partidas de português, ganhe moedas e desbloqueie skins do Batman, Roblox, Futebol, Homem-Aranha, Minions e o Cachorro Secreto!
+        </p>
+
+        <div class="menu-actions">
+          <button id="btn-start-game" class="btn btn-3d btn-primary btn-large btn-block">
+            🎮 Modo Aventura (Fases)
+          </button>
+          <button id="btn-start-matrix-puzzle" class="btn btn-3d btn-success btn-large btn-block">
+            🧩 Batalha de Puzzles (Ganhe Gemas 💎)
+          </button>
+          <button id="btn-open-shop" class="btn btn-3d btn-warning btn-large">
+            🛍️ Loja de Mascotes
+          </button>
+          <button id="btn-open-parent" class="btn btn-3d btn-pink btn-large">
+            👨‍👩‍👧 Painel dos Pais
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- TELA 2: SELEÇÃO DE FASES / CATEGORIAS (#level-select-screen) -->
+    <section id="level-select-screen" class="screen">
+      <div class="section-header">
+        <h2>Escolha a sua Missão!</h2>
+        <button class="btn btn-3d btn-info btn-back-menu">
+          ⬅️ Voltar ao Menu
+        </button>
+      </div>
+
+      <div id="category-cards-container" class="category-grid">
+        <!-- Injetado dinamicamente via JS -->
+      </div>
+    </section>
+
+    <!-- TELA 3: TELA DE JOGO (#game-screen) -->
+    <section id="game-screen" class="screen">
+      <div class="game-header-bar">
+        <button class="btn btn-3d btn-info btn-back-categories">
+          ⬅️ Sair
+        </button>
+
+        <div class="game-progress-container">
+          <div class="game-progress-fill"></div>
+        </div>
+
+        <span class="question-counter">Pergunta 1 de 5</span>
+        <span class="game-cat-badge">---</span>
+      </div>
+
+      <div class="game-card">
+        <!-- Balão do Mascote -->
+        <div class="mascot-feedback-area">
+          <div class="game-mascot-avatar">🦉</div>
+          <div class="game-mascot-bubble">Leia a frase com atenção e complete a palavra!</div>
+        </div>
+
+        <!-- Frase com Lacuna Destacada -->
+        <div class="sentence-container">
+          <p class="game-sentence">Carregando pergunta...</p>
+          <div class="audio-pronunciation-box">
+            <button class="btn-speak-word" title="Ouvir a pronúncia exata da palavra">
+              🔊 Ouvir Pronúncia da Palavra
+            </button>
+          </div>
+        </div>
+
+        <!-- Opções de Resposta -->
+        <div class="game-options-grid">
+          <!-- Injetado dinamicamente -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TELA 3.5: MODO PUZZLE MATRIZ (#matrix-game-screen) -->
+    <section id="matrix-game-screen" class="screen">
+      <div class="game-card matrix-card">
+        <div class="game-card-header">
+          <div class="question-counter">🧩 Batalha de Puzzles Ortográficos</div>
+          <div class="game-cat-badge" style="background-color: #F59E0B;">💎 Ganhe Gemas Secretas</div>
+        </div>
+
+        <h3 class="matrix-title">Preencha todas as frases do desafio para vencer o Puzzle!</h3>
+
+        <div id="matrix-sentences-container" class="matrix-sentences-grid">
+          <!-- Injetado dinamicamente -->
+        </div>
+
+        <div class="matrix-word-bank-section">
+          <p class="matrix-bank-title">👇 Clique nas palavras do banco para preencher as lacunas vazias:</p>
+          <div id="matrix-word-bank" class="matrix-word-bank"></div>
+        </div>
+
+        <div class="matrix-actions">
+          <button id="btn-submit-matrix" class="btn btn-3d btn-primary btn-large">
+            🚀 Validar Respostas (+1 Gem 💎)
+          </button>
+          <button class="btn btn-3d btn-info btn-back-menu">
+            ⬅️ Voltar ao Menu
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TELA 4: LOJA DE MASCOTES (#shop-screen) -->
+    <section id="shop-screen" class="screen">
+      <div class="section-header">
+        <h2>🛍️ Loja de Mascotes Colecionáveis</h2>
+        <button class="btn btn-3d btn-info btn-back-menu">
+          ⬅️ Voltar ao Menu
+        </button>
+      </div>
+
+      <div id="shop-cards-container" class="shop-grid">
+        <!-- Injetado dinamicamente -->
+      </div>
+    </section>
+
+    <!-- TELA 5: PAINEL DOS PAIS (#parent-screen) -->
+    <section id="parent-screen" class="screen">
+      <div class="section-header">
+        <h2>👨‍👩‍👧 Painel de Acompanhamento dos Pais</h2>
+        <div style="display: flex; gap: 12px;">
+          <button id="btn-reset-data" class="btn btn-3d btn-warning">
+            🔄 Resetar Dados
+          </button>
+          <button class="btn btn-3d btn-info btn-back-menu">
+            ⬅️ Voltar ao Menu
+          </button>
+        </div>
+      </div>
+
+      <div id="parent-panel-container">
+        <!-- Injetado dinamicamente via parentReport.js -->
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL DE EXPLICAÇÃO / FEEDBACK (#feedback-modal) -->
+  <div id="feedback-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="feedback-icon">💡</div>
+      <h3 class="feedback-title">Feedback</h3>
+      <div class="feedback-text">Conteúdo do feedback...</div>
+      <div class="feedback-reward" style="display: none;"></div>
+      <button class="btn btn-3d btn-primary btn-block btn-feedback-next">
+        Próxima Pergunta ➡️
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DE VITÓRIA DE FASE (#victory-modal) -->
+  <div id="victory-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="font-size: 4rem;">🏆</div>
+      <h3 style="font-family: var(--font-heading); font-size: 2.2rem; color: var(--purple-main); margin-bottom: 8px;">
+        Missão Cumprida!
+      </h3>
+      <div class="victory-stars">
+        <span class="victory-star">⭐</span>
+        <span class="victory-star">⭐</span>
+        <span class="victory-star">⭐</span>
+      </div>
+      <div class="victory-stats"></div>
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button class="btn btn-3d btn-warning btn-victory-restart" style="flex: 1;">
+          🔄 Jogar Novamente
+        </button>
+        <button class="btn btn-3d btn-primary btn-victory-menu" style="flex: 1;">
+          🗺️ Selecionar Fase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FOTO BOOTH COM WEBCAM USB (#photobooth-modal) -->
+  <div id="photobooth-modal" class="modal-overlay">
+    <div class="modal-card photobooth-card" style="max-width: 760px !important; width: 92vw !important; padding: 18px 24px !important; background: #0F172A !important;">
+      <h3 class="photobooth-title" style="font-size: 1.6rem !important; margin-bottom: 2px !important; color: #38BDF8 !important;">📸 Estúdio de Foto do Campeão!</h3>
+      <p class="photobooth-desc" style="font-size: 0.9rem !important; margin-bottom: 12px !important; color: #94A3B8 !important;">Fique pronto na câmera para tirar uma foto épica ao lado do seu Mascote!</p>
+
+      <div class="photobooth-stage" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 14px !important; width: 100% !important; height: 200px !important; max-height: 200px !important; background: #020617 !important; padding: 10px !important; border-radius: 18px !important; overflow: hidden !important; margin-bottom: 16px !important;">
+        <div class="photobooth-cam-box" style="flex: 1 1 50% !important; width: 50% !important; height: 180px !important; max-height: 180px !important; position: relative !important; overflow: hidden !important; border-radius: 14px !important; border: 2px solid rgba(255,255,255,0.2) !important;">
+          <video id="webcam-video" autoplay playsinline style="width: 100% !important; height: 180px !important; max-height: 180px !important; object-fit: cover !important; transform: scaleX(-1) !important; display: block !important;"></video>
+          <span class="cam-label" style="position: absolute !important; bottom: 6px !important; left: 50% !important; transform: translateX(-50%) !important; background: rgba(15,23,42,0.85) !important; padding: 3px 12px !important; border-radius: 20px !important; font-size: 0.8rem !important; color: #38BDF8 !important; border: 1px solid rgba(255,255,255,0.2) !important; white-space: nowrap !important; z-index: 5 !important;">👤 Você</span>
+        </div>
+        <div class="photobooth-mascot-box" style="flex: 1 1 50% !important; width: 50% !important; height: 180px !important; max-height: 180px !important; position: relative !important; overflow: hidden !important; border-radius: 14px !important; border: 2px solid rgba(255,255,255,0.2) !important;">
+          <img id="photobooth-mascot-img" src="images/cyber_hero.jpg" alt="Mascote" style="width: 100% !important; height: 180px !important; max-height: 180px !important; object-fit: cover !important; object-position: center top !important; display: block !important;" />
+          <span id="photobooth-mascot-name" class="mascot-label" style="position: absolute !important; bottom: 6px !important; left: 50% !important; transform: translateX(-50%) !important; background: rgba(15,23,42,0.85) !important; padding: 3px 12px !important; border-radius: 20px !important; font-size: 0.8rem !important; color: #34D399 !important; border: 1px solid rgba(255,255,255,0.2) !important; white-space: nowrap !important; z-index: 5 !important;">🕷️ Cyber Spider Hero</span>
+        </div>
+        <div id="photobooth-countdown" class="photobooth-countdown" style="position: absolute !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; font-size: 4.5rem !important; font-weight: 800 !important; color: #F59E0B !important; z-index: 10 !important;">3</div>
+      </div>
+
+      <div class="photobooth-actions" style="display: flex !important; gap: 14px !important; justify-content: center !important;">
+        <button id="btn-snap-photo" class="btn btn-3d btn-primary btn-large">
+          📸 Tirar Foto (3s)
+        </button>
+        <button id="btn-download-last-photo" class="btn btn-3d btn-warning">
+          💾 Baixar Foto (PNG)
+        </button>
+        <button id="btn-close-photobooth" class="btn btn-3d btn-info">
+          ❌ Fechar
+        </button>
+      </div>
+
+      <canvas id="photobooth-canvas" style="display: none;"></canvas>
+    </div>
+  </div>
+
+  <!-- MODAL SELEÇÃO DE PERFIL / LOGIN (#profile-modal) -->
+  <div id="profile-modal" class="modal-overlay">
+    <div class="modal-card profile-card-modal">
+      <h3 class="photobooth-title">👤 Área de Jogadores (Perfis)</h3>
+      <p class="photobooth-desc">Selecione quem vai jogar agora ou crie um novo perfil de campeão!</p>
+
+      <div id="profiles-list-container" class="profiles-grid"></div>
+
+      <div class="create-profile-box">
+        <input type="text" id="input-new-profile-name" placeholder="Digite o nome do jogador..." maxlength="18" />
+        <button id="btn-create-profile" class="btn btn-3d btn-success">
+          ➕ Criar Perfil
+        </button>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button id="btn-close-profile-modal" class="btn btn-3d btn-info">
+          ❌ Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GALERIA DE FOTOS (#gallery-modal) -->
+  <div id="gallery-modal" class="modal-overlay">
+    <div class="modal-card gallery-card-modal">
+      <h3 class="photobooth-title">🖼️ Sua Galeria de Fotos</h3>
+      <p class="photobooth-desc">Escolha a sua foto favorita tirada no estúdio para colocar de perfil!</p>
+
+      <div id="gallery-list-container" class="gallery-grid"></div>
+
+      <div style="margin-top: 20px;">
+        <button id="btn-close-gallery-modal" class="btn btn-3d btn-info">
+          ❌ Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Principal App ES Module -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
