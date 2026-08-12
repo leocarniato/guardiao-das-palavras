@@ -855,10 +855,11 @@ export class UIController {
   }
 
   // Modal de Perfis / Login (Troca de Jogador)
-  openProfileModal() {
+  async openProfileModal() {
     const modal = document.getElementById('profile-modal');
     if (!modal) return;
 
+    await this.game.fetchDbProfiles();
     this.renderProfilesList();
 
     const btnClose = document.getElementById('btn-close-profile-modal');

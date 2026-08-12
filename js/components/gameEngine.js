@@ -236,6 +236,37 @@ export class GameEngine {
     return defaultBase;
   }
 
+  async fetchDbProfiles() {
+    try {
+      const res = await fetch('/api/profiles');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.profiles)) {
+          data.profiles.forEach(p => {
+            if (!this.profilesData.profiles[p.id]) {
+              this.profilesData.profiles[p.id] = {
+                ...this.createDefaultPlayerData(p.name),
+                ...p,
+                passwordHash: p.hasPassword ? 'DB_PROTECTED' : ''
+              };
+            } else {
+              this.profilesData.profiles[p.id].coins = p.coins;
+              this.profilesData.profiles[p.id].gems = p.gems;
+              this.profilesData.profiles[p.id].level = p.level;
+              this.profilesData.profiles[p.id].activeMascot = p.activeMascot;
+              this.profilesData.profiles[p.id].passwordHash = p.hasPassword ? 'DB_PROTECTED' : '';
+            }
+          });
+          this.savePlayerData();
+          return data.profiles;
+        }
+      }
+    } catch (e) {
+      console.log('Servidor DB local desconectado ou rodando em modo offline:', e);
+    }
+    return this.getProfiles();
+  }
+
   savePlayerData() {
     try {
       if (!this.playerData.photoGallery) {
@@ -244,6 +275,13 @@ export class GameEngine {
       this.profilesData.profiles[this.activeProfileId] = this.playerData;
       this.profilesData.activeProfileId = this.activeProfileId;
       localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profilesData));
+
+      // Sincroniza assincronamente com o Banco de Dados SQLite (guardiao.db)
+      fetch('/api/profiles/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this.playerData)
+      }).catch(() => {});
     } catch (e) {
       console.warn('Erro ao salvar perfis no localStorage:', e);
     }
@@ -256,8 +294,31 @@ export class GameEngine {
   async createProfile(name, password) {
     const cleanName = (name || '').trim() || 'Novo Jogador';
     const cleanPassword = (password || '').trim();
-    const hash = await this.hashPassword(cleanPassword);
     
+    try {
+      const res = await fetch('/api/profiles/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: cleanName, password: cleanPassword })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.profile) {
+          const newProfile = data.profile;
+          newProfile.passwordHash = cleanPassword ? 'DB_PROTECTED' : '';
+          this.profilesData.profiles[newProfile.id] = newProfile;
+          this.activeProfileId = newProfile.id;
+          this.playerData = newProfile;
+          this.savePlayerData();
+          return newProfile;
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao criar no DB, salvando em modo offline:', e);
+    }
+
+    // Fallback offline
+    const hash = await this.hashPassword(cleanPassword);
     const newId = 'profile_' + Date.now();
     const newProfile = this.createDefaultPlayerData(cleanName, hash);
     newProfile.id = newId;
@@ -273,9 +334,31 @@ export class GameEngine {
     const profile = this.profilesData.profiles[profileId];
     if (!profile) return false;
 
-    // Se o perfil não tem senha definida (legado)
-    if (!profile.passwordHash && !profile.password) {
+    // Se o perfil não tem senha definida
+    if (!profile.passwordHash && !profile.password && profile.hasPassword === false) {
       return true;
+    }
+
+    try {
+      const res = await fetch('/api/profiles/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: profileId, password: inputPassword })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.profile) {
+          this.activeProfileId = profileId;
+          this.playerData = data.profile;
+          this.profilesData.profiles[profileId] = data.profile;
+          this.savePlayerData();
+          return true;
+        }
+      } else if (res.status === 401) {
+        return false;
+      }
+    } catch (e) {
+      console.warn('Login em modo offline:', e);
     }
 
     const inputHash = await this.hashPassword(inputPassword.trim());
@@ -286,13 +369,23 @@ export class GameEngine {
   hasPassword(profileId) {
     const profile = this.profilesData.profiles[profileId];
     if (!profile) return false;
-    return Boolean(profile.passwordHash || profile.password);
+    return Boolean(profile.passwordHash || profile.password || profile.hasPassword);
   }
 
   async setProfilePassword(profileId, newPassword) {
     const profile = this.profilesData.profiles[profileId];
     if (!profile) return false;
+
+    try {
+      await fetch('/api/profiles/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: profileId, newPassword })
+      });
+    } catch (e) {}
+
     profile.passwordHash = await this.hashPassword(newPassword.trim());
+    profile.hasPassword = Boolean(newPassword.trim());
     delete profile.password; // limpa campo antigo se houver
     this.savePlayerData();
     return true;
@@ -303,6 +396,7 @@ export class GameEngine {
     if (!profile) return false;
     delete profile.passwordHash;
     delete profile.password;
+    profile.hasPassword = false;
     this.savePlayerData();
     return true;
   }
@@ -319,11 +413,19 @@ export class GameEngine {
     return true;
   }
 
-  deleteProfile(profileId) {
+  async deleteProfile(profileId) {
     const keys = Object.keys(this.profilesData.profiles);
     if (keys.length <= 1) {
       return { success: false, message: 'Não é possível excluir o único perfil existente!' };
     }
+
+    try {
+      await fetch('/api/profiles/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: profileId })
+      });
+    } catch (e) {}
 
     delete this.profilesData.profiles[profileId];
     if (this.activeProfileId === profileId) {

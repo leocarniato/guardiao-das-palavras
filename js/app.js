@@ -31,8 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 2. Atualiza Estatísticas Iniciais no Header
+  // 2. Atualiza Estatísticas Iniciais no Header e busca perfis do Banco de Dados SQLite
   ui.updateHeaderStats();
+  game.fetchDbProfiles().then(() => {
+    ui.updateHeaderStats();
+  });
 
   // 3. Configurações de Navegação Principal (Botões do Menu)
   const btnBrandHome = document.getElementById('btn-brand-home');
