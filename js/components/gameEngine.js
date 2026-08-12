@@ -133,10 +133,23 @@ export class GameEngine {
     this.streak = 0;
   }
 
-  createDefaultPlayerData(name = 'Jogador') {
+  async hashPassword(password) {
+    if (!password) return '';
+    try {
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      return password; // Fallback caso crypto.subtle não esteja disponível
+    }
+  }
+
+  createDefaultPlayerData(name = 'Jogador', passwordHash = '') {
     return {
       id: 'profile_' + Date.now(),
       name: name,
+      passwordHash: passwordHash,
       coins: 20,
       gems: 5,
       xp: 0,
@@ -175,6 +188,7 @@ export class GameEngine {
         const pedroProfile = {
           id: 'pedro',
           name: oldPlayer.name || 'Pedro',
+          passwordHash: '',
           coins: oldPlayer.coins || 20,
           xp: oldPlayer.xp || 0,
           level: oldPlayer.level || 1,
@@ -205,7 +219,7 @@ export class GameEngine {
       console.warn('Erro ao migrar/carregar perfis:', e);
     }
 
-    const initialPedro = this.createDefaultPlayerData('Pedro');
+    const initialPedro = this.createDefaultPlayerData('Pedro', '');
     initialPedro.id = 'pedro';
 
     const defaultBase = {
@@ -239,10 +253,13 @@ export class GameEngine {
     return Object.values(this.profilesData.profiles);
   }
 
-  createProfile(name) {
+  async createProfile(name, password) {
     const cleanName = (name || '').trim() || 'Novo Jogador';
+    const cleanPassword = (password || '').trim();
+    const hash = await this.hashPassword(cleanPassword);
+    
     const newId = 'profile_' + Date.now();
-    const newProfile = this.createDefaultPlayerData(cleanName);
+    const newProfile = this.createDefaultPlayerData(cleanName, hash);
     newProfile.id = newId;
 
     this.profilesData.profiles[newId] = newProfile;
@@ -252,8 +269,41 @@ export class GameEngine {
     return newProfile;
   }
 
-  selectProfile(profileId) {
+  async verifyPassword(profileId, inputPassword) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+
+    // Se o perfil não tem senha definida (legado)
+    if (!profile.passwordHash && !profile.password) {
+      return true;
+    }
+
+    const inputHash = await this.hashPassword(inputPassword.trim());
+    const storedHash = profile.passwordHash || await this.hashPassword(profile.password || '');
+    return inputHash === storedHash;
+  }
+
+  hasPassword(profileId) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+    return Boolean(profile.passwordHash || profile.password);
+  }
+
+  async setProfilePassword(profileId, newPassword) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+    profile.passwordHash = await this.hashPassword(newPassword.trim());
+    delete profile.password; // limpa campo antigo se houver
+    this.savePlayerData();
+    return true;
+  }
+
+  async selectProfile(profileId, inputPassword) {
     if (!this.profilesData.profiles[profileId]) return false;
+    
+    const isCorrect = await this.verifyPassword(profileId, inputPassword);
+    if (!isCorrect) return false;
+
     this.activeProfileId = profileId;
     this.playerData = this.profilesData.profiles[profileId];
     this.savePlayerData();

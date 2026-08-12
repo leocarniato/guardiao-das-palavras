@@ -288,16 +288,39 @@
 
       <div id="profiles-list-container" class="profiles-grid"></div>
 
-      <div class="create-profile-box">
+      <div class="create-profile-box" style="display: flex; flex-direction: column; gap: 10px;">
         <input type="text" id="input-new-profile-name" placeholder="Digite o nome do jogador..." maxlength="18" />
-        <button id="btn-create-profile" class="btn btn-3d btn-success">
-          ➕ Criar Perfil
+        <input type="password" id="input-new-profile-password" placeholder="Crie uma senha de acesso..." maxlength="20" />
+        <button id="btn-create-profile" class="btn btn-3d btn-success" style="width: 100%;">
+          ➕ Criar Perfil com Senha
         </button>
       </div>
 
       <div style="margin-top: 20px;">
         <button id="btn-close-profile-modal" class="btn btn-3d btn-info">
           ❌ Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DIGITAR SENHA DE LOGIN (#login-password-modal) -->
+  <div id="login-password-modal" class="modal-overlay">
+    <div class="modal-card login-password-card" style="max-width: 440px;">
+      <h3 class="photobooth-title" style="color: #F59E0B;">🔑 Acesso por Senha</h3>
+      <p id="login-password-target-name" class="photobooth-desc">Digite a senha para acessar o perfil.</p>
+
+      <div class="password-input-group" style="margin: 18px 0;">
+        <input type="password" id="input-login-password" placeholder="Digite a senha do perfil..." maxlength="20" style="width: 100%; background: #020617; border: 2px solid #38BDF8; border-radius: 14px; padding: 12px 16px; color: #FFF; font-size: 1.15rem; text-align: center; font-family: var(--font-body);" />
+        <p id="login-password-error" style="color: #EF4444; font-size: 0.95rem; margin-top: 8px; display: none; font-weight: 700; font-family: var(--font-body);">❌ Senha incorreta! Tente novamente.</p>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button id="btn-confirm-login-password" class="btn btn-3d btn-primary" style="flex: 1;">
+          🔓 Confirmar
+        </button>
+        <button id="btn-cancel-login-password" class="btn btn-3d btn-info" style="flex: 1;">
+          ❌ Cancelar
         </button>
       </div>
     </div>

@@ -975,18 +975,27 @@ body {
 
 .create-profile-box {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-top: 16px;
 }
 
 .create-profile-box input {
-  flex: 1;
+  width: 100%;
   background: #020617;
   border: 1.5px solid #38BDF8;
   border-radius: 12px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   color: #FFF;
   font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.create-profile-box input:focus,
+#input-login-password:focus {
+  outline: none;
+  border-color: #F59E0B;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
 }
 
 .gallery-grid {

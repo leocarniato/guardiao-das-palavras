@@ -855,21 +855,34 @@ export class UIController {
 
     const btnCreate = document.getElementById('btn-create-profile');
     const inputName = document.getElementById('input-new-profile-name');
-    if (btnCreate && inputName) {
-      btnCreate.onclick = () => {
+    const inputPassword = document.getElementById('input-new-profile-password');
+
+    if (btnCreate && inputName && inputPassword) {
+      btnCreate.onclick = async () => {
         const name = inputName.value.trim();
-        if (name) {
-          this.game.createProfile(name);
-          inputName.value = '';
-          soundManager.playFanfare();
-          this.triggerConfetti(40);
-          this.updateHeaderStats();
-          this.renderProfilesList();
-          modal.classList.remove('active');
-          alert(`🎉 Perfil do ${name} criado com sucesso! Boa sorte nas partidas!`);
-        } else {
+        const password = inputPassword.value.trim();
+
+        if (!name) {
           alert('Por favor, digite um nome para o novo perfil.');
+          inputName.focus();
+          return;
         }
+
+        if (!password) {
+          alert('Por favor, crie uma senha para proteger o seu perfil!');
+          inputPassword.focus();
+          return;
+        }
+
+        await this.game.createProfile(name, password);
+        inputName.value = '';
+        inputPassword.value = '';
+        soundManager.playFanfare();
+        this.triggerConfetti(40);
+        this.updateHeaderStats();
+        this.renderProfilesList();
+        modal.classList.remove('active');
+        alert(`🎉 Perfil do ${name} criado e protegido por senha com sucesso! Boa sorte!`);
       };
     }
 
@@ -891,12 +904,14 @@ export class UIController {
         ? `<img class="profile-card-photo" src="${p.profilePhoto}" alt="${p.name}" />`
         : `<div class="profile-card-avatar-badge">${mascot.icon || '👤'}</div>`;
 
+      const hasPass = this.game.hasPassword(p.id);
+
       return `
         <div class="profile-select-card ${isActive ? 'active-profile' : ''}">
           <div class="profile-card-header">
             ${photoHtml}
             <div class="profile-card-info">
-              <h4 class="profile-card-name">${p.name}</h4>
+              <h4 class="profile-card-name">${p.name} ${hasPass ? '🔒' : '⚠️ Sem Senha'}</h4>
               <p class="profile-card-meta">⭐ Nível ${p.level || 1} • 🪙 ${p.coins || 0} Moedas</p>
             </div>
           </div>
@@ -917,27 +932,131 @@ export class UIController {
     container.querySelectorAll('.btn-switch-profile').forEach(btn => {
       btn.onclick = () => {
         const id = btn.getAttribute('data-id');
-        if (this.game.selectProfile(id)) {
+        const targetProfile = profiles.find(p => p.id === id);
+        if (!targetProfile) return;
+
+        this.promptPasswordLoginModal(targetProfile, async () => {
           soundManager.playFanfare();
           this.triggerConfetti(40);
           this.updateHeaderStats();
           const modal = document.getElementById('profile-modal');
           if (modal) modal.classList.remove('active');
           alert(`⚡ Perfil alterado para ${this.game.playerData.name}!`);
-        }
+        });
       };
     });
 
     container.querySelectorAll('.btn-delete-profile').forEach(btn => {
-      btn.onclick = () => {
+      btn.onclick = async () => {
         const id = btn.getAttribute('data-id');
-        if (confirm('Tem certeza de que deseja excluir este perfil?')) {
-          this.game.deleteProfile(id);
-          this.updateHeaderStats();
-          this.renderProfilesList();
+        const targetProfile = profiles.find(p => p.id === id);
+        if (!targetProfile) return;
+
+        if (this.game.hasPassword(id)) {
+          const inputPwd = prompt(`Para excluir o perfil de ${targetProfile.name}, digite a senha correspondente:`);
+          if (!inputPwd) return;
+          const isOk = await this.game.verifyPassword(id, inputPwd);
+          if (!isOk) {
+            alert('❌ Senha incorreta! O perfil não foi excluído.');
+            return;
+          }
+        } else {
+          if (!confirm(`Tem certeza de que deseja excluir o perfil de ${targetProfile.name}?`)) {
+            return;
+          }
         }
+
+        this.game.deleteProfile(id);
+        this.updateHeaderStats();
+        this.renderProfilesList();
+        alert(`🗑️ Perfil de ${targetProfile.name} excluído.`);
       };
     });
+  }
+
+  promptPasswordLoginModal(profile, onSuccess) {
+    const pwdModal = document.getElementById('login-password-modal');
+    if (!pwdModal) return;
+
+    const targetNameEl = document.getElementById('login-password-target-name');
+    const inputPwd = document.getElementById('input-login-password');
+    const errorEl = document.getElementById('login-password-error');
+    const btnConfirm = document.getElementById('btn-confirm-login-password');
+    const btnCancel = document.getElementById('btn-cancel-login-password');
+
+    const hasPass = this.game.hasPassword(profile.id);
+
+    if (targetNameEl) {
+      if (hasPass) {
+        targetNameEl.textContent = `Digite a senha para acessar o perfil de ${profile.name}:`;
+      } else {
+        targetNameEl.textContent = `O perfil de ${profile.name} ainda não possui senha. Crie uma senha para entrar:`;
+      }
+    }
+
+    if (inputPwd) {
+      inputPwd.value = '';
+      inputPwd.placeholder = hasPass ? 'Digite a senha do perfil...' : 'Crie a nova senha do perfil...';
+      setTimeout(() => inputPwd.focus(), 150);
+    }
+
+    if (errorEl) {
+      errorEl.style.display = 'none';
+    }
+
+    const handleConfirm = async () => {
+      const typed = inputPwd.value.trim();
+      if (!typed) {
+        if (errorEl) {
+          errorEl.textContent = '⚠️ Por favor, digite a senha.';
+          errorEl.style.display = 'block';
+        }
+        inputPwd.focus();
+        return;
+      }
+
+      if (!hasPass) {
+        // Cadastrar senha pela primeira vez no perfil legado
+        await this.game.setProfilePassword(profile.id, typed);
+        await this.game.selectProfile(profile.id, typed);
+        pwdModal.classList.remove('active');
+        if (onSuccess) onSuccess();
+        return;
+      }
+
+      const isCorrect = await this.game.verifyPassword(profile.id, typed);
+      if (isCorrect) {
+        await this.game.selectProfile(profile.id, typed);
+        pwdModal.classList.remove('active');
+        if (onSuccess) onSuccess();
+      } else {
+        if (errorEl) {
+          errorEl.textContent = '❌ Senha incorreta! Tente novamente.';
+          errorEl.style.display = 'block';
+        }
+        soundManager.playWrong();
+        inputPwd.value = '';
+        inputPwd.focus();
+      }
+    };
+
+    if (btnConfirm) {
+      btnConfirm.onclick = handleConfirm;
+    }
+
+    if (inputPwd) {
+      inputPwd.onkeydown = (e) => {
+        if (e.key === 'Enter') handleConfirm();
+      };
+    }
+
+    if (btnCancel) {
+      btnCancel.onclick = () => {
+        pwdModal.classList.remove('active');
+      };
+    }
+
+    pwdModal.classList.add('active');
   }
 
   // Modal Galeria de Fotos Salvas
