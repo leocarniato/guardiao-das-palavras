@@ -288,9 +288,12 @@
 
       <div id="profiles-list-container" class="profiles-grid"></div>
 
-      <div class="create-profile-box" style="display: flex; flex-direction: column; gap: 10px;">
-        <input type="text" id="input-new-profile-name" placeholder="Digite o nome do jogador..." maxlength="18" />
-        <input type="password" id="input-new-profile-password" placeholder="Crie uma senha de acesso..." maxlength="20" />
+      <div class="create-profile-box" style="display: flex; flex-direction: column; gap: 12px;">
+        <input type="text" id="input-new-profile-name" placeholder="👤 Nome do novo jogador..." maxlength="18" />
+        <div style="position: relative; width: 100%;">
+          <input type="password" id="input-new-profile-password" placeholder="🔒 Crie uma senha de acesso..." maxlength="20" style="width: 100%; padding-right: 46px;" />
+          <button type="button" id="btn-toggle-new-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94A3B8;" title="Mostrar/Ocultar Senha">👁️</button>
+        </div>
         <button id="btn-create-profile" class="btn btn-3d btn-success" style="width: 100%;">
           ➕ Criar Perfil com Senha
         </button>
@@ -310,9 +313,10 @@
       <h3 class="photobooth-title" style="color: #F59E0B;">🔑 Acesso por Senha</h3>
       <p id="login-password-target-name" class="photobooth-desc">Digite a senha para acessar o perfil.</p>
 
-      <div class="password-input-group" style="margin: 18px 0;">
-        <input type="password" id="input-login-password" placeholder="Digite a senha do perfil..." maxlength="20" style="width: 100%; background: #020617; border: 2px solid #38BDF8; border-radius: 14px; padding: 12px 16px; color: #FFF; font-size: 1.15rem; text-align: center; font-family: var(--font-body);" />
-        <p id="login-password-error" style="color: #EF4444; font-size: 0.95rem; margin-top: 8px; display: none; font-weight: 700; font-family: var(--font-body);">❌ Senha incorreta! Tente novamente.</p>
+      <div class="password-input-group" style="margin: 18px 0; position: relative;">
+        <input type="password" id="input-login-password" placeholder="Digite a senha do perfil..." maxlength="20" style="width: 100%; background: #020617; border: 2px solid #38BDF8; border-radius: 14px; padding: 12px 48px 12px 16px; color: #FFF; font-size: 1.2rem; text-align: center; font-family: var(--font-body);" />
+        <button type="button" id="btn-toggle-login-password" style="position: absolute; right: 12px; top: 22px; transform: translateY(-50%); background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94A3B8;" title="Mostrar/Ocultar Senha">👁️</button>
+        <p id="login-password-error" style="color: #EF4444; font-size: 0.95rem; margin-top: 10px; display: none; font-weight: 700; font-family: var(--font-body);">❌ Senha incorreta! Tente novamente.</p>
       </div>
 
       <div style="display: flex; gap: 12px;">

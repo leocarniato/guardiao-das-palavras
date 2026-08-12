@@ -1031,3 +1031,81 @@ body {
   0%, 100% { filter: drop-shadow(0 0 8px var(--cyan-neon)); }
   50% { filter: drop-shadow(0 0 18px var(--cyan-neon)); }
 }
+
+/* Z-Index Prioritário do Modal de Senha */
+#login-password-modal {
+  z-index: 10000 !important;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE E UX MOBILE (Celulares e Tablets)
+   ========================================================================== */
+@media (max-width: 768px) {
+  #app {
+    padding: 10px !important;
+  }
+
+  .global-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 12px 14px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .brand-logo {
+    justify-content: center !important;
+  }
+
+  .brand-logo h1 {
+    font-size: 1.05rem !important;
+    letter-spacing: 1px !important;
+  }
+
+  .header-stats {
+    justify-content: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .stat-pill {
+    padding: 6px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .hero-title {
+    font-size: 1.45rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem !important;
+  }
+
+  .modal-card {
+    padding: 20px 16px !important;
+    max-width: 95vw !important;
+    border-radius: 20px !important;
+  }
+
+  .create-profile-box input,
+  #input-login-password {
+    font-size: 16px !important; /* Impede zoom automático do teclado em celulares */
+  }
+
+  .game-options-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .btn-option {
+    padding: 16px 20px !important;
+  }
+
+  .game-sentence {
+    font-size: 1.3rem !important;
+  }
+
+  .mascot-feedback-area {
+    padding: 12px 16px !important;
+  }
+}

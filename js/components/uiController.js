@@ -857,6 +857,15 @@ export class UIController {
     const inputName = document.getElementById('input-new-profile-name');
     const inputPassword = document.getElementById('input-new-profile-password');
 
+    const btnToggleNew = document.getElementById('btn-toggle-new-password');
+    if (btnToggleNew && inputPassword) {
+      btnToggleNew.onclick = () => {
+        const isPass = inputPassword.type === 'password';
+        inputPassword.type = isPass ? 'text' : 'password';
+        btnToggleNew.textContent = isPass ? '🙈' : '👁️';
+      };
+    }
+
     if (btnCreate && inputName && inputPassword) {
       btnCreate.onclick = async () => {
         const name = inputName.value.trim();
@@ -983,8 +992,17 @@ export class UIController {
     const errorEl = document.getElementById('login-password-error');
     const btnConfirm = document.getElementById('btn-confirm-login-password');
     const btnCancel = document.getElementById('btn-cancel-login-password');
+    const btnToggleLogin = document.getElementById('btn-toggle-login-password');
 
     const hasPass = this.game.hasPassword(profile.id);
+
+    if (btnToggleLogin && inputPwd) {
+      btnToggleLogin.onclick = () => {
+        const isPass = inputPwd.type === 'password';
+        inputPwd.type = isPass ? 'text' : 'password';
+        btnToggleLogin.textContent = isPass ? '🙈' : '👁️';
+      };
+    }
 
     if (targetNameEl) {
       if (hasPass) {
@@ -995,7 +1013,9 @@ export class UIController {
     }
 
     if (inputPwd) {
+      inputPwd.type = 'password';
       inputPwd.value = '';
+      if (btnToggleLogin) btnToggleLogin.textContent = '👁️';
       inputPwd.placeholder = hasPass ? 'Digite a senha do perfil...' : 'Crie a nova senha do perfil...';
       setTimeout(() => inputPwd.focus(), 150);
     }
