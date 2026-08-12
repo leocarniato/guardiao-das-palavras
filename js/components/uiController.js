@@ -855,7 +855,7 @@ export class UIController {
   }
 
   // Modal de Perfis / Login (Troca de Jogador)
-  async openProfileModal() {
+  async openProfileModal(options = {}) {
     const modal = document.getElementById('profile-modal');
     if (!modal) return;
 
@@ -864,12 +864,18 @@ export class UIController {
 
     const btnClose = document.getElementById('btn-close-profile-modal');
     if (btnClose) {
-      btnClose.onclick = () => modal.classList.remove('active');
+      if (options.mandatory && !this.game.hasActiveProfile()) {
+        btnClose.style.display = 'none';
+      } else {
+        btnClose.style.display = 'inline-block';
+        btnClose.onclick = () => modal.classList.remove('active');
+      }
     }
 
     const btnCreate = document.getElementById('btn-create-profile');
     const inputName = document.getElementById('input-new-profile-name');
     const inputPassword = document.getElementById('input-new-profile-password');
+    const inputHint = document.getElementById('input-new-profile-hint');
 
     const btnToggleNew = document.getElementById('btn-toggle-new-password');
     if (btnToggleNew && inputPassword) {
@@ -884,6 +890,7 @@ export class UIController {
       btnCreate.onclick = async () => {
         const name = inputName.value.trim();
         const password = inputPassword.value.trim();
+        const hint = inputHint ? inputHint.value.trim() : '';
 
         if (!name) {
           alert('Por favor, digite um nome para o novo perfil.');
@@ -897,9 +904,11 @@ export class UIController {
           return;
         }
 
-        await this.game.createProfile(name, password);
+        await this.game.createProfile(name, password, hint);
         inputName.value = '';
         inputPassword.value = '';
+        if (inputHint) inputHint.value = '';
+
         soundManager.playFanfare();
         this.triggerConfetti(40);
         this.updateHeaderStats();
@@ -1050,7 +1059,6 @@ export class UIController {
       }
 
       if (!hasPass) {
-        // Cadastrar senha pela primeira vez no perfil legado
         await this.game.setProfilePassword(profile.id, typed);
         await this.game.selectProfile(profile.id, typed);
         pwdModal.classList.remove('active');
@@ -1094,15 +1102,79 @@ export class UIController {
     if (btnForgot) {
       btnForgot.onclick = () => {
         pwdModal.classList.remove('active');
-        const profileModal = document.getElementById('profile-modal');
-        if (profileModal) profileModal.classList.remove('active');
-        this.renderParentPanel(document.getElementById('parent-panel-container'));
-        this.showScreen('parent-screen');
-        alert(`💡 Redirecionado para o Painel dos Pais! Lá você pode redefinir a senha do perfil de ${profile.name} sem perder o progresso.`);
+        this.openRecoveryModal(profile, onSuccess);
       };
     }
 
     pwdModal.classList.add('active');
+  }
+
+  openRecoveryModal(profile, onSuccess) {
+    const recoveryModal = document.getElementById('recovery-password-modal');
+    if (!recoveryModal) return;
+
+    const targetNameEl = document.getElementById('recovery-target-name');
+    const hintBox = document.getElementById('recovery-hint-box');
+    const hintText = document.getElementById('recovery-hint-text');
+    const inputPin = document.getElementById('input-recovery-pin');
+    const inputNewPwd = document.getElementById('input-recovery-new-pwd');
+    const errorMsg = document.getElementById('recovery-error-msg');
+    const btnConfirm = document.getElementById('btn-confirm-recovery');
+    const btnCancel = document.getElementById('btn-cancel-recovery');
+
+    if (targetNameEl) {
+      targetNameEl.textContent = `Jogador: ${profile.name}`;
+    }
+
+    if (profile.passwordHint && hintBox && hintText) {
+      hintText.textContent = profile.passwordHint;
+      hintBox.style.display = 'block';
+    } else if (hintBox) {
+      hintBox.style.display = 'none';
+    }
+
+    if (inputPin) inputPin.value = '';
+    if (inputNewPwd) inputNewPwd.value = '';
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    if (btnConfirm) {
+      btnConfirm.onclick = async () => {
+        const pin = inputPin.value.trim();
+        const newPwd = inputNewPwd.value.trim();
+
+        if (!newPwd) {
+          alert('Por favor, digite a nova senha!');
+          inputNewPwd.focus();
+          return;
+        }
+
+        const res = await this.game.resetPasswordWithPin(profile.id, pin, newPwd);
+        if (res.success) {
+          recoveryModal.classList.remove('active');
+          const profileModal = document.getElementById('profile-modal');
+          if (profileModal) profileModal.classList.remove('active');
+          soundManager.playFanfare();
+          this.triggerConfetti(40);
+          this.updateHeaderStats();
+          alert(`🎉 Senha do perfil ${profile.name} redefinida com sucesso!`);
+          if (onSuccess) onSuccess();
+        } else {
+          if (errorMsg) {
+            errorMsg.textContent = `❌ ${res.message}`;
+            errorMsg.style.display = 'block';
+          }
+          soundManager.playWrong();
+        }
+      };
+    }
+
+    if (btnCancel) {
+      btnCancel.onclick = () => {
+        recoveryModal.classList.remove('active');
+      };
+    }
+
+    recoveryModal.classList.add('active');
   }
 
   // Modal Galeria de Fotos Salvas

@@ -31,10 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 2. Atualiza Estatísticas Iniciais no Header e busca perfis do Banco de Dados SQLite
+  // 2. Atualiza Estatísticas Iniciais no Header e sincroniza Banco em Nuvem
   ui.updateHeaderStats();
   game.fetchDbProfiles().then(() => {
     ui.updateHeaderStats();
+    if (!game.hasActiveProfile()) {
+      ui.openProfileModal({ mandatory: true });
+    }
   });
 
   // 3. Configurações de Navegação Principal (Botões do Menu)

@@ -294,6 +294,7 @@
           <input type="password" id="input-new-profile-password" placeholder="🔒 Crie uma senha de acesso..." maxlength="20" style="width: 100%; padding-right: 46px;" />
           <button type="button" id="btn-toggle-new-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94A3B8;" title="Mostrar/Ocultar Senha">👁️</button>
         </div>
+        <input type="text" id="input-new-profile-hint" placeholder="💡 Dica de senha (opcional)..." maxlength="30" />
         <button id="btn-create-profile" class="btn btn-3d btn-success" style="width: 100%;">
           ➕ Criar Perfil com Senha
         </button>
@@ -331,6 +332,40 @@
       <div style="margin-top: 14px; text-align: center;">
         <button type="button" id="btn-forgot-password" style="background: none; border: none; color: #38BDF8; font-size: 0.9rem; cursor: pointer; text-decoration: underline; font-weight: 700; font-family: var(--font-body);">
           ❓ Esqueci a senha deste perfil
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RECUPERAÇÃO DE SENHA (#recovery-password-modal) -->
+  <div id="recovery-password-modal" class="modal-overlay" style="z-index: 11000;">
+    <div class="modal-card recovery-password-card" style="max-width: 480px;">
+      <h3 class="photobooth-title" style="color: #EC4899;">🔐 Recuperação de Senha</h3>
+      <p id="recovery-target-name" class="photobooth-desc">Redefina a senha usando o PIN Mestre dos Pais.</p>
+
+      <div id="recovery-hint-box" style="background: rgba(56, 189, 248, 0.15); border: 1.5px solid #38BDF8; border-radius: 14px; padding: 12px 16px; margin: 12px 0; text-align: center; display: none;">
+        <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 700; font-family: var(--font-body);">💡 DICA DA SENHA DO JOGADOR:</span>
+        <p id="recovery-hint-text" style="color: #38BDF8; font-size: 1.1rem; font-weight: 800; margin-top: 4px; font-family: var(--font-body);">---</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin: 16px 0;">
+        <div>
+          <label style="font-size: 0.85rem; color: #F59E0B; font-weight: 800; font-family: var(--font-heading);">👨‍👩‍👧 PIN MESTRE DOS PAIS (Padrão: 1234):</label>
+          <input type="password" id="input-recovery-pin" placeholder="Digite 1234..." maxlength="10" style="width: 100%; background: #020617; border: 2px solid #F59E0B; border-radius: 12px; padding: 10px 14px; color: #FFF; font-size: 1.1rem; text-align: center; font-family: var(--font-body);" />
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #34D399; font-weight: 800; font-family: var(--font-heading);">🔒 NOVA SENHA DO JOGADOR:</label>
+          <input type="password" id="input-recovery-new-pwd" placeholder="Digite a nova senha..." maxlength="20" style="width: 100%; background: #020617; border: 2px solid #34D399; border-radius: 12px; padding: 10px 14px; color: #FFF; font-size: 1.1rem; text-align: center; font-family: var(--font-body);" />
+        </div>
+        <p id="recovery-error-msg" style="color: #EF4444; font-size: 0.9rem; display: none; font-weight: 700; text-align: center; font-family: var(--font-body);">❌ PIN incorreto!</p>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button id="btn-confirm-recovery" class="btn btn-3d btn-success" style="flex: 1;">
+          ✅ Redefinir Senha
+        </button>
+        <button id="btn-cancel-recovery" class="btn btn-3d btn-info" style="flex: 1;">
+          ❌ Cancelar
         </button>
       </div>
     </div>

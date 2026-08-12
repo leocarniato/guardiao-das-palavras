@@ -4,6 +4,7 @@
  */
 
 import { CATEGORIES, QUESTIONS_DATA } from '../data/questionsData.js';
+import { cloudDb } from '../services/cloudDb.js';
 
 export const MASCOTS = [
   {
@@ -106,23 +107,19 @@ export const MASCOTS = [
   }
 ];
 
-const LEGACY_STORAGE_KEY = 'guardiao_palavras_data';
-const PROFILES_STORAGE_KEY = 'guardiao_palavras_profiles_v2';
+const PROFILES_STORAGE_KEY = 'guardiao_palavras_profiles_v3';
 
 export class GameEngine {
   constructor() {
     this.categories = CATEGORIES;
     this.questionsData = QUESTIONS_DATA;
 
-    // Carrega a base de perfis e o perfil ativo mantendo 100% do progresso!
     this.profilesData = this.loadProfilesData();
-    this.activeProfileId = this.profilesData.activeProfileId || 'pedro';
+    this.activeProfileId = this.profilesData.activeProfileId || null;
     
-    // Aponta playerData para o perfil ativo
-    this.playerData = this.profilesData.profiles[this.activeProfileId] || this.createDefaultPlayerData('Pedro');
-    if (typeof this.playerData.gems === 'undefined') {
-      this.playerData.gems = 5;
-    }
+    this.playerData = (this.activeProfileId && this.profilesData.profiles[this.activeProfileId])
+      ? this.profilesData.profiles[this.activeProfileId]
+      : null;
 
     // Estado da partida atual
     this.currentCategory = null;
@@ -133,6 +130,10 @@ export class GameEngine {
     this.streak = 0;
   }
 
+  hasActiveProfile() {
+    return Boolean(this.activeProfileId && this.playerData);
+  }
+
   async hashPassword(password) {
     if (!password) return '';
     try {
@@ -141,15 +142,16 @@ export class GameEngine {
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     } catch (e) {
-      return password; // Fallback caso crypto.subtle não esteja disponível
+      return password;
     }
   }
 
-  createDefaultPlayerData(name = 'Jogador', passwordHash = '') {
+  createDefaultPlayerData(name = 'Jogador', passwordHash = '', hint = '') {
     return {
       id: 'profile_' + Date.now(),
       name: name,
       passwordHash: passwordHash,
+      passwordHint: hint,
       coins: 20,
       gems: 5,
       xp: 0,
@@ -176,67 +178,34 @@ export class GameEngine {
       const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
       if (savedProfiles) {
         const parsed = JSON.parse(savedProfiles);
-        if (parsed && parsed.profiles && Object.keys(parsed.profiles).length > 0) {
+        if (parsed && parsed.profiles && typeof parsed.profiles === 'object') {
           return parsed;
         }
       }
-
-      // Migração de Progresso Antigo
-      const legacyData = localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (legacyData) {
-        const oldPlayer = JSON.parse(legacyData);
-        const pedroProfile = {
-          id: 'pedro',
-          name: oldPlayer.name || 'Pedro',
-          passwordHash: '',
-          coins: oldPlayer.coins || 20,
-          xp: oldPlayer.xp || 0,
-          level: oldPlayer.level || 1,
-          activeMascot: oldPlayer.activeMascot || 'aranha',
-          unlockedMascots: oldPlayer.unlockedMascots || ['aranha'],
-          profilePhoto: oldPlayer.profilePhoto || null,
-          photoGallery: oldPlayer.photoGallery || (oldPlayer.profilePhoto ? [{
-            id: 'photo_legacy',
-            dataUrl: oldPlayer.profilePhoto,
-            date: new Date().toLocaleDateString('pt-BR'),
-            mascotName: 'Foto Campeão'
-          }] : []),
-          stars: oldPlayer.stars || {},
-          stats: oldPlayer.stats || {}
-        };
-
-        const migrated = {
-          activeProfileId: 'pedro',
-          profiles: {
-            'pedro': pedroProfile
-          }
-        };
-
-        localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(migrated));
-        return migrated;
-      }
     } catch (e) {
-      console.warn('Erro ao migrar/carregar perfis:', e);
+      console.warn('Erro ao carregar perfis:', e);
     }
 
-    const initialPedro = this.createDefaultPlayerData('Pedro', '');
-    initialPedro.id = 'pedro';
-
-    const defaultBase = {
-      activeProfileId: 'pedro',
-      profiles: {
-        'pedro': initialPedro
-      }
+    return {
+      activeProfileId: null,
+      profiles: {}
     };
-
-    try {
-      localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(defaultBase));
-    } catch (e) {}
-
-    return defaultBase;
   }
 
   async fetchDbProfiles() {
+    try {
+      const cloudProfiles = await cloudDb.fetchProfiles();
+      if (cloudProfiles && typeof cloudProfiles === 'object') {
+        Object.keys(cloudProfiles).forEach(id => {
+          this.profilesData.profiles[id] = cloudProfiles[id];
+        });
+        this.savePlayerData();
+        return Object.values(this.profilesData.profiles);
+      }
+    } catch (e) {
+      console.log('Conexão Cloud:', e);
+    }
+
     try {
       const res = await fetch('/api/profiles');
       if (res.ok) {
@@ -249,41 +218,44 @@ export class GameEngine {
                 ...p,
                 passwordHash: p.hasPassword ? 'DB_PROTECTED' : ''
               };
-            } else {
-              this.profilesData.profiles[p.id].coins = p.coins;
-              this.profilesData.profiles[p.id].gems = p.gems;
-              this.profilesData.profiles[p.id].level = p.level;
-              this.profilesData.profiles[p.id].activeMascot = p.activeMascot;
-              this.profilesData.profiles[p.id].passwordHash = p.hasPassword ? 'DB_PROTECTED' : '';
             }
           });
           this.savePlayerData();
           return data.profiles;
         }
       }
-    } catch (e) {
-      console.log('Servidor DB local desconectado ou rodando em modo offline:', e);
-    }
+    } catch (e) {}
+
     return this.getProfiles();
   }
 
   savePlayerData() {
     try {
-      if (!this.playerData.photoGallery) {
-        this.playerData.photoGallery = [];
+      if (this.activeProfileId && this.playerData) {
+        if (!this.playerData.photoGallery) {
+          this.playerData.photoGallery = [];
+        }
+        this.profilesData.profiles[this.activeProfileId] = this.playerData;
+        this.profilesData.activeProfileId = this.activeProfileId;
       }
-      this.profilesData.profiles[this.activeProfileId] = this.playerData;
-      this.profilesData.activeProfileId = this.activeProfileId;
+
       localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profilesData));
 
-      // Sincroniza assincronamente com o Banco de Dados SQLite (guardiao.db)
-      fetch('/api/profiles/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.playerData)
-      }).catch(() => {});
+      // Sincronização em Nuvem Multi-Dispositivo (PC + Celular)
+      if (Object.keys(this.profilesData.profiles).length > 0) {
+        cloudDb.saveProfiles(this.profilesData.profiles).catch(() => {});
+      }
+
+      // Sincronização secundária com backend Python se disponível
+      if (this.playerData) {
+        fetch('/api/profiles/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.playerData)
+        }).catch(() => {});
+      }
     } catch (e) {
-      console.warn('Erro ao salvar perfis no localStorage:', e);
+      console.warn('Erro ao salvar perfis:', e);
     }
   }
 
@@ -291,43 +263,87 @@ export class GameEngine {
     return Object.values(this.profilesData.profiles);
   }
 
-  async createProfile(name, password) {
+  async createProfile(name, password, hint = '') {
     const cleanName = (name || '').trim() || 'Novo Jogador';
     const cleanPassword = (password || '').trim();
+    const cleanHint = (hint || '').trim();
     
-    try {
-      const res = await fetch('/api/profiles/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: cleanName, password: cleanPassword })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.success && data.profile) {
-          const newProfile = data.profile;
-          newProfile.passwordHash = cleanPassword ? 'DB_PROTECTED' : '';
-          this.profilesData.profiles[newProfile.id] = newProfile;
-          this.activeProfileId = newProfile.id;
-          this.playerData = newProfile;
-          this.savePlayerData();
-          return newProfile;
-        }
-      }
-    } catch (e) {
-      console.warn('Erro ao criar no DB, salvando em modo offline:', e);
-    }
-
-    // Fallback offline
     const hash = await this.hashPassword(cleanPassword);
     const newId = 'profile_' + Date.now();
-    const newProfile = this.createDefaultPlayerData(cleanName, hash);
+    const newProfile = this.createDefaultPlayerData(cleanName, hash, cleanHint);
     newProfile.id = newId;
 
     this.profilesData.profiles[newId] = newProfile;
     this.activeProfileId = newId;
     this.playerData = newProfile;
     this.savePlayerData();
+
+    // Envia criação para API Python se ativa
+    fetch('/api/profiles/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: cleanName, password: cleanPassword })
+    }).catch(() => {});
+
     return newProfile;
+  }
+
+  async verifyPassword(profileId, inputPassword) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+
+    if (!profile.passwordHash && !profile.password && profile.hasPassword === false) {
+      return true;
+    }
+
+    const inputHash = await this.hashPassword(inputPassword.trim());
+    const storedHash = profile.passwordHash || await this.hashPassword(profile.password || '');
+    
+    if (inputHash === storedHash || storedHash === 'DB_PROTECTED') {
+      this.activeProfileId = profileId;
+      this.playerData = profile;
+      this.savePlayerData();
+      return true;
+    }
+
+    try {
+      const res = await fetch('/api/profiles/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: profileId, password: inputPassword })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.profile) {
+          this.activeProfileId = profileId;
+          this.playerData = data.profile;
+          this.profilesData.profiles[profileId] = data.profile;
+          this.savePlayerData();
+          return true;
+        }
+      }
+    } catch (e) {}
+
+    return false;
+  }
+
+  async resetPasswordWithPin(profileId, masterPin, newPassword) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return { success: false, message: 'Perfil não encontrado!' };
+
+    const cleanPin = (masterPin || '').trim();
+    if (cleanPin !== '1234') {
+      return { success: false, message: 'PIN Mestre dos Pais incorreto! (Padrão: 1234)' };
+    }
+
+    const newHash = await this.hashPassword((newPassword || '').trim());
+    profile.passwordHash = newHash;
+    delete profile.password;
+
+    this.activeProfileId = profileId;
+    this.playerData = profile;
+    this.savePlayerData();
+    return { success: true };
   }
 
   async verifyPassword(profileId, inputPassword) {
