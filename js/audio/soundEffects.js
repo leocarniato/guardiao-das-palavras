@@ -278,24 +278,27 @@ class SoundManager {
     }
   }
 
-  // Pronúncia Perfeita da Palavra utilizando o Google Tradutor TTS (pt-BR)
-  speakWord(text, onEndCallback = null) {
-    if (!text) return;
-    const cleanWord = text.trim();
+  // Pronúncia Perfeita da Palavra utilizando o Google Tradutor
+  speakWord(word, onEndCallback = null) {
+    if (!word || this.isMuted) return;
+
+    const cleanWord = word.replace(/\[.*?\]/g, '').replace(/[._-]/g, ' ').trim();
+    if (!cleanWord) return;
 
     try {
-      // Interrompe áudios anteriores se houver
       if (this.currentAudio) {
         this.currentAudio.pause();
         this.currentAudio = null;
       }
 
-      // Endpoint da nossa API local que busca o áudio cristalino do Google Tradutor
-      const ttsUrl = `/api/tts?q=${encodeURIComponent(cleanWord)}`;
+      // URL Oficial do Google Tradutor HD (client=tw-ob)
+      const googleDirectUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanWord)}&tl=pt-BR&client=tw-ob`;
+      const localApiUrl = `/api/tts?q=${encodeURIComponent(cleanWord)}`;
+      const targetUrl = (window.location.protocol.startsWith('http')) ? localApiUrl : googleDirectUrl;
 
       const audio = new Audio();
       audio.crossOrigin = "anonymous";
-      audio.src = ttsUrl;
+      audio.src = targetUrl;
       this.currentAudio = audio;
 
       audio.onended = () => {
@@ -304,45 +307,61 @@ class SoundManager {
       };
 
       audio.onerror = () => {
-        console.warn('Google Tradutor TTS indisponível. Usando voz secundária...');
-        this.speakWordFallback(cleanWord, onEndCallback);
+        const fallbackAudio = new Audio(googleDirectUrl);
+        fallbackAudio.play().catch(() => {
+          this.speakWordFallback(cleanWord, onEndCallback);
+        });
       };
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(err => {
-          console.warn('Erro ao tocar áudio do Google Tradutor. Executando voz secundária:', err);
-          this.speakWordFallback(cleanWord, onEndCallback);
+        playPromise.catch(() => {
+          const fallbackAudio = new Audio(googleDirectUrl);
+          fallbackAudio.play().catch(() => {
+            this.speakWordFallback(cleanWord, onEndCallback);
+          });
         });
       }
     } catch (e) {
-      console.warn('Erro geral de áudio TTS:', e);
       this.speakWordFallback(cleanWord, onEndCallback);
     }
   }
 
-  // Fallback da Web Speech API se a rede oscilar
+  // Fallback da Web Speech API com voz natural de alta qualidade (Google / Natural)
   speakWordFallback(cleanText, onEndCallback = null) {
     if (!this.synth) return;
     this.synth.cancel();
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'pt-BR';
-    utterance.rate = 0.8; // Velocidade reduzida e mais clara
+    utterance.rate = 0.95;
     utterance.pitch = 1.0;
 
-    const voices = this.synth.getVoices();
-    const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'));
-    if (ptVoice) {
-      utterance.voice = ptVoice;
-    }
+    const applyBestVoice = () => {
+      const voices = this.synth.getVoices();
+      const bestVoice = voices.find(v => 
+        (v.lang.includes('pt') || v.lang.includes('PT')) && 
+        (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Neural') || v.name.includes('Online'))
+      ) || voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'))
+        || voices.find(v => v.lang.includes('pt'));
 
-    if (onEndCallback) {
-      utterance.onend = onEndCallback;
-      utterance.onerror = onEndCallback;
-    }
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+      }
 
-    this.synth.speak(utterance);
+      if (onEndCallback) {
+        utterance.onend = onEndCallback;
+        utterance.onerror = onEndCallback;
+      }
+
+      this.synth.speak(utterance);
+    };
+
+    if (this.synth.getVoices().length === 0) {
+      this.synth.onvoiceschanged = applyBestVoice;
+    } else {
+      applyBestVoice();
+    }
   }
 
   toggleMute() {

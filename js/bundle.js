@@ -350,16 +350,27 @@ class SoundManager {
 
   speakText(text) {
     if (!text) return;
-    const cleanText = text.replace(/\[.*?\]/g, '').trim();
+    const cleanWord = text.replace(/\[.*?\]/g, '').replace(/[._-]/g, ' ').trim();
+    if (!cleanWord) return;
 
     try {
-      const ttsUrl = `/api/tts?q=${encodeURIComponent(cleanText)}`;
-      const audio = new Audio(ttsUrl);
-      audio.play().catch(() => {
-        this.fallbackSpeechSynthesis(cleanText);
-      });
+      const googleDirectUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanWord)}&tl=pt-BR&client=tw-ob`;
+      const localApiUrl = `/api/tts?q=${encodeURIComponent(cleanWord)}`;
+      const targetUrl = (window.location.protocol.startsWith('http')) ? localApiUrl : googleDirectUrl;
+
+      const audio = new Audio(targetUrl);
+      const playPromise = audio.play();
+
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          const fallbackAudio = new Audio(googleDirectUrl);
+          fallbackAudio.play().catch(() => {
+            this.fallbackSpeechSynthesis(cleanWord);
+          });
+        });
+      }
     } catch (e) {
-      this.fallbackSpeechSynthesis(cleanText);
+      this.fallbackSpeechSynthesis(cleanWord);
     }
   }
 
@@ -369,16 +380,28 @@ class SoundManager {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
-    utterance.rate = 0.9;
+    utterance.rate = 0.95;
     utterance.pitch = 1.0;
 
-    const voices = window.speechSynthesis.getVoices();
-    const ptVoice = voices.find(v => v.lang.includes('pt') || v.lang.includes('PT'));
-    if (ptVoice) {
-      utterance.voice = ptVoice;
-    }
+    const applyBestVoice = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const bestVoice = voices.find(v => 
+        (v.lang.includes('pt') || v.lang.includes('PT')) && 
+        (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Neural') || v.name.includes('Online'))
+      ) || voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'))
+        || voices.find(v => v.lang.includes('pt'));
 
-    window.speechSynthesis.speak(utterance);
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    };
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = applyBestVoice;
+    } else {
+      applyBestVoice();
+    }
   }
 }
 

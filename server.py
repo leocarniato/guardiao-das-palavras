@@ -83,7 +83,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_error(400, "Parâmetro 'q' ausente")
                 return
             
-            tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={urllib.parse.quote(q)}&tl=pt-BR&client=gtx"
+            tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={urllib.parse.quote(q)}&tl=pt-BR&client=tw-ob"
             try:
                 req = urllib.request.Request(
                     tts_url, 
