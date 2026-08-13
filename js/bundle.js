@@ -2609,6 +2609,7 @@ class UIController {
     if (!adminModal) return;
 
     try {
+      await this.game.fetchDbProfiles();
       await this.renderAdminProfilesGrid();
     } catch (e) {
       console.warn('Erro ao renderizar painel admin:', e);
