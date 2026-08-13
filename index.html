@@ -299,9 +299,19 @@
 
   <!-- MODAL SELEÇÃO DE PERFIL / LOGIN (#profile-modal) -->
   <div id="profile-modal" class="modal-overlay">
-    <div class="modal-card profile-card-modal">
+    <div class="modal-card profile-card-modal" style="max-width: 600px !important;">
       <h3 class="photobooth-title">👤 Área de Jogadores (Perfis)</h3>
       <p class="photobooth-desc">Selecione quem vai jogar agora ou crie um novo perfil de campeão!</p>
+
+      <!-- EXIBIÇÃO DA FOTO GRANDE DO PERFIL ATUALMENTE EM USO -->
+      <div id="modal-active-user-box" style="background: linear-gradient(135deg, #1E293B, #0F172A) !important; border: 2.5px solid #38BDF8 !important; border-radius: 20px !important; padding: 16px 20px !important; margin-bottom: 18px !important; display: flex !important; align-items: center !important; gap: 18px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;">
+        <img id="modal-active-user-img" src="images/cyber_hero.jpg" alt="Foto do Perfil" style="width: 86px !important; height: 86px !important; min-width: 86px !important; min-height: 86px !important; border-radius: 50% !important; object-fit: cover !important; border: 3px solid #34D399 !important; box-shadow: 0 0 20px rgba(52,211,153,0.5) !important; display: block !important;" />
+        <div style="flex: 1 !important;">
+          <span style="font-family: var(--font-heading) !important; font-size: 0.75rem !important; color: #34D399 !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important;">JOGADOR ATIVO SELECIONADO</span>
+          <h3 id="modal-active-user-name" style="font-family: var(--font-heading) !important; color: #FFFFFF !important; font-size: 1.35rem !important; font-weight: 800 !important; margin: 2px 0 4px 0 !important;">Pedro</h3>
+          <p id="modal-active-user-details" style="color: #94A3B8 !important; font-size: 0.85rem !important; font-weight: 700 !important; margin: 0 !important;">Nível 1 • 20 Moedas 🪙 • Mascote: Cyber Aranha Hero</p>
+        </div>
+      </div>
 
       <div id="profiles-list-container" class="profiles-grid"></div>
 

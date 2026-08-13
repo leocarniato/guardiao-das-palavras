@@ -1,11 +1,11 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Suporte completo a Celular/Smartphones, WebCam, Mascotes no Quadrado Perfeito (object-fit: contain),
- * Pronúncia HD do Google Tradutor e Painel do Administrador (ADM) completo para gerenciar perfis,
- * redefinir senhas, apagar usuários e conceder recompensas.
+ * Exercícios com frases completas e lacunas perfeitas, Matrix Puzzle corrigido,
+ * Histórico gravado no Banco de Dados SQLite, Exibição de foto grande no Perfil,
+ * Painel ADM com logs em tempo real e Login/Seleção de Perfil no início.
  */
 
-// 1. DADOS DE PERGUNTAS E CATEGORIAS
+// 1. DADOS DE PERGUNTAS E CATEGORIAS COM FRASES CONTEXTUAIS COMPLETAS
 const CATEGORIES = [
   {
     id: 'ao_am',
@@ -74,88 +74,88 @@ const CATEGORIES = [
 
 const QUESTIONS_DATA = {
   ao_am: [
-    { word: 'Eles viajarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Viajarão (com ÃO) indica uma ação que ainda vai acontecer no FUTURO (amanhã).' },
-    { word: 'Eles viajaram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Viajaram (com AM) indica uma ação que já aconteceu no PASSADO (ontem).' },
-    { word: 'Amanhã os meninos jogarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Como a frase diz "Amanhã", o verbo fica no futuro: jogarão (ÃO).' },
-    { word: 'Ontem as meninas comeram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Como a frase diz "Ontem", o verbo fica no passado: comeram (AM).' },
-    { word: 'No próximo sábado eles cantarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Próximo sábado é futuro, por isso usamos cantarão (ÃO).' },
-    { word: 'Na semana passada eles correram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Semana passada é passado, por isso usamos correram (AM).' },
-    { word: 'Eles brincarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Brincarão (ÃO) é futuro.' },
-    { word: 'Eles brincaram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Brincaram (AM) é passado.' },
-    { word: 'Ano que vem eles estudarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Ano que vem é futuro: estudarão (ÃO).' },
-    { word: 'Ontem à noite eles assistiram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Ontem à noite é passado: assistiram (AM).' }
+    { sentence: 'Amanhã os alunos [ ___ ] para o acampamento escolar.', word: 'viajarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Viajarão (com ÃO) indica uma ação que acontecerá no FUTURO (amanhã).' },
+    { sentence: 'Ontem à tarde os meninos [ ___ ] futebol no parque.', word: 'jogaram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Jogaram (com AM) indica uma ação que já aconteceu no PASSADO (ontem).' },
+    { sentence: 'No próximo sábado elas [ ___ ] no coral da escola.', word: 'cantarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Como a frase fala do "próximo sábado", usaremos o futuro: cantarão (ÃO).' },
+    { sentence: 'Na semana passada os atletas [ ___ ] na maratona.', word: 'correram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Semana passada já aconteceu (passado), por isso usamos correram (AM).' },
+    { sentence: 'Ano que vem os estudantes [ ___ ] para o exame final.', word: 'estudarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Ano que vem é futuro: estudarão (ÃO).' },
+    { sentence: 'Ontem à noite todas as crianças [ ___ ] ao filme.', word: 'assistiram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Ontem à noite é passado: assistiram (AM).' },
+    { sentence: 'No futuro os robôs [ ___ ] os cientistas nas tarefas.', word: 'ajudarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'No futuro é uma ação que vai acontecer: ajudarão (ÃO).' },
+    { sentence: 'Ontem os cães do vizinho [ ___ ] a noite inteira.', word: 'latiram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Ontem é passado: latiram (AM).' },
+    { sentence: 'Amanhã à tarde os cozinheiros [ ___ ] o bolo.', word: 'prepararão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Amanhã é futuro: prepararão (ÃO).' },
+    { sentence: 'Mês passado eles [ ___ ] um novo livro de aventura.', word: 'escreveram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Mês passado é passado: escreveram (AM).' }
   ],
   som_z: [
-    { word: 'Mesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'A palavra MESA é escrita com S, mas tem som de Z por estar entre duas vogais.' },
-    { word: 'Beleza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'A palavra BELEZA é escrita com Z!' },
-    { word: 'Exemplo', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXEMPLO é escrito com X, mas a letra X tem som de Z nesta palavra!' },
-    { word: 'Casa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'CASA é escrita com S (com som de Z entre vogais).' },
-    { word: 'Azul', options: ['Z', 'S', 'X'], correct: 0, explanation: 'AZUL é escrita com Z.' },
-    { word: 'Exame', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXAME é escrito com X (com som de Z).' },
-    { word: 'Princesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'PRINCESA é escrita com S.' },
-    { word: 'Natureza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'NATUREZA é escrita com Z.' },
-    { word: 'Exército', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXÉRCITO é escrito com X com som de Z.' },
-    { word: 'Rosa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'ROSA é escrita com S.' }
+    { sentence: 'A [ ___ ] da sala de jantar é feita de madeira nobre.', word: 'mesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'A palavra MESA é escrita com S, mas tem som de Z por estar entre duas vogais.' },
+    { sentence: 'A florista admirou a [ ___ ] da rosa no jardim.', word: 'beleza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'A palavra BELEZA é escrita com Z!' },
+    { sentence: 'O professor deu um ótimo [ ___ ] para a turma.', word: 'exemplo', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXEMPLO é escrito com X, mas a letra X tem som de Z nesta palavra!' },
+    { sentence: 'A [ ___ ] da vovó fica perto da montanha.', word: 'casa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'CASA é escrita com S (com som de Z entre vogais).' },
+    { sentence: 'O céu limpo de verão estava muito [ ___ ].', word: 'azul', options: ['Z', 'S', 'X'], correct: 0, explanation: 'AZUL é escrita com Z.' },
+    { sentence: 'O jovem estudante fez um [ ___ ] de matemática.', word: 'exame', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXAME é escrito com X (com som de Z).' },
+    { sentence: 'A linda [ ___ ] vivia num castelo distante.', word: 'princesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'PRINCESA é escrita com S.' },
+    { sentence: 'Devemos respeitar e cuidar da [ ___ ].', word: 'natureza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'NATUREZA é escrita com Z.' },
+    { sentence: 'O [ ___ ] defendeu o país com coragem.', word: 'exército', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXÉRCITO é escrito com X com som de Z.' },
+    { sentence: 'Coloquei uma [ ___ ] cheirosa no vaso de vidro.', word: 'rosa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'ROSA é escrita com S.' }
   ],
   m_pb: [
-    { word: 'Campo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra P (caMpo).' },
-    { word: 'Tambor', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra B (taMbor).' },
-    { word: 'Canto', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T (não é P nem B).' },
-    { word: 'Samba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (saMba).' },
-    { word: 'Lâmpada', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (lâMpada).' },
-    { word: 'Ponte', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
-    { word: 'Bomba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (boMba).' },
-    { word: 'Computador', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (coMputador).' },
-    { word: 'Dente', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
-    { word: 'Umbigo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (uMbigo).' }
+    { sentence: 'Os atletas correm pelo [ ___ ] de futebol.', word: 'campo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra P (caMpo).' },
+    { sentence: 'O músico tocou o [ ___ ] com muita energia.', word: 'tambor', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra B (taMbor).' },
+    { sentence: 'O pássaro entoou um lindo [ ___ ] no galho.', word: 'canto', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T (não é P nem B).' },
+    { sentence: 'A multidão dançou ao som do [ ___ ] brasileiro.', word: 'samba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra B (saMba).' },
+    { sentence: 'Acenda a [ ___ ] para iluminar o quarto.', word: 'lâmpada', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (lâMpada).' },
+    { sentence: 'Atravessamos a [ ___ ] sobre o rio agitado.', word: 'ponte', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
+    { sentence: 'Os bombeiros desativaram a [ ___ ] em segurança.', word: 'bomba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (boMba).' },
+    { sentence: 'Liguei o [ ___ ] para fazer a lição de casa.', word: 'computador', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (coMputador).' },
+    { sentence: 'Fui ao dentista cuidar do meu [ ___ ].', word: 'dente', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
+    { sentence: 'O bebê tem um pequeno sinal perto do [ ___ ].', word: 'umbigo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (uMbigo).' }
   ],
   ch_x: [
-    { word: 'Chuva', options: ['CH', 'X'], correct: 0, explanation: 'CHUVA se escreve com CH!' },
-    { word: 'Xícara', options: ['X', 'CH'], correct: 0, explanation: 'XÍCARA se escreve com X!' },
-    { word: 'Caixa', options: ['X', 'CH'], correct: 0, explanation: 'CAIXA se escreve com X!' },
-    { word: 'Chave', options: ['CH', 'X'], correct: 0, explanation: 'CHAVE se escreve com CH!' },
-    { word: 'Lixo', options: ['X', 'CH'], correct: 0, explanation: 'LIXO se escreve com X!' },
-    { word: 'Chocolate', options: ['CH', 'X'], correct: 0, explanation: 'CHOCOLATE se escreve com CH!' },
-    { word: 'Peixe', options: ['X', 'CH'], correct: 0, explanation: 'PEIXE se escreve com X!' },
-    { word: 'Chinelos', options: ['CH', 'X'], correct: 0, explanation: 'CHINELOS se escreve com CH!' },
-    { word: 'Bexiga', options: ['X', 'CH'], correct: 0, explanation: 'BEXIGA se escreve com X!' },
-    { word: 'Mochila', options: ['CH', 'X'], correct: 0, explanation: 'MOCHILA se escreve com CH!' }
+    { sentence: 'A forte [ ___ ] molhou todas as calçadas.', word: 'chuva', options: ['CH', 'X'], correct: 0, explanation: 'CHUVA se escreve com CH!' },
+    { sentence: 'Vovó serviu chá quente em uma [ ___ ] azul.', word: 'xícara', options: ['X', 'CH'], correct: 0, explanation: 'XÍCARA se escreve com X!' },
+    { sentence: 'Guardei meus brinquedos dentro da [ ___ ].', word: 'caixa', options: ['X', 'CH'], correct: 0, explanation: 'CAIXA se escreve com X!' },
+    { sentence: 'Usei a [ ___ ] dourada para abrir o portão.', word: 'chave', options: ['CH', 'X'], correct: 0, explanation: 'CHAVE se escreve com CH!' },
+    { sentence: 'Jogue as embalagens usadas no [ ___ ].', word: 'lixo', options: ['X', 'CH'], correct: 0, explanation: 'LIXO se escreve com X!' },
+    { sentence: 'Comi um pedaço de [ ___ ] ao leite.', word: 'chocolate', options: ['CH', 'X'], correct: 0, explanation: 'CHOCOLATE se escreve com CH!' },
+    { sentence: 'O peixinho e o [ ___ ] nadavam no lago.', word: 'peixe', options: ['X', 'CH'], correct: 0, explanation: 'PEIXE se escreve com X!' },
+    { sentence: 'Calcei meus [ ___ ] confortáveis para caminhar.', word: 'chinelos', options: ['CH', 'X'], correct: 0, explanation: 'CHINELOS se escreve com CH!' },
+    { sentence: 'O palhaço encheu uma grande [ ___ ] vermelha.', word: 'bexiga', options: ['X', 'CH'], correct: 0, explanation: 'BEXIGA se escreve com X!' },
+    { sentence: 'Coloquei os cadernos dentro da minha [ ___ ].', word: 'mochila', options: ['CH', 'X'], correct: 0, explanation: 'MOCHILA se escreve com CH!' }
   ],
   g_j: [
-    { word: 'Girafa', options: ['G', 'J'], correct: 0, explanation: 'GIRAFA se escreve com G!' },
-    { word: 'Jibóia', options: ['J', 'G'], correct: 0, explanation: 'JIBÓIA se escreve com J!' },
-    { word: 'Gelo', options: ['G', 'J'], correct: 0, explanation: 'GELO se escreve com G!' },
-    { word: 'Janela', options: ['J', 'G'], correct: 0, explanation: 'JANELA se escreve com J!' },
-    { word: 'Gente', options: ['G', 'J'], correct: 0, explanation: 'GENTE se escreve com G!' },
-    { word: 'Jacaré', options: ['J', 'G'], correct: 0, explanation: 'JACARÉ se escreve com J!' },
-    { word: 'Relógio', options: ['G', 'J'], correct: 0, explanation: 'RELÓGIO se escreve com G!' },
-    { word: 'Jogo', options: ['J', 'G'], correct: 0, explanation: 'JOGO se escreve com J!' },
-    { word: 'Mágico', options: ['G', 'J'], correct: 0, explanation: 'MÁGICO se escreve com G!' },
-    { word: 'Jardim', options: ['J', 'G'], correct: 0, explanation: 'JARDIM se escreve com J!' }
+    { sentence: 'A elegante [ ___ ] alcança as folhas mais altas.', word: 'girafa', options: ['G', 'J'], correct: 0, explanation: 'GIRAFA se escreve com G!' },
+    { sentence: 'A perigosa [ ___ ] deslizava entre as pedras.', word: 'jibóia', options: ['J', 'G'], correct: 0, explanation: 'JIBÓIA se escreve com J!' },
+    { sentence: 'Coloquei cubos de [ ___ ] na limonada bem gelada.', word: 'gelo', options: ['G', 'J'], correct: 0, explanation: 'GELO se escreve com G!' },
+    { sentence: 'Abri a [ ___ ] do quarto para ver a luz do sol.', word: 'janela', options: ['J', 'G'], correct: 0, explanation: 'JANELA se escreve com J!' },
+    { sentence: 'Havia muita [ ___ ] animada na festa de aniversário.', word: 'gente', options: ['G', 'J'], correct: 0, explanation: 'GENTE se escreve com G!' },
+    { sentence: 'O grande [ ___ ] tomava sol na beira do rio.', word: 'jacaré', options: ['J', 'G'], correct: 0, explanation: 'JACARÉ se escreve com J!' },
+    { sentence: 'Olhei as horas no [ ___ ] de pulso.', word: 'relógio', options: ['G', 'J'], correct: 0, explanation: 'RELÓGIO se escreve com G!' },
+    { sentence: 'Vencemos o [ ___ ] de tabuleiro com os amigos.', word: 'jogo', options: ['J', 'G'], correct: 0, explanation: 'JOGO se escreve com J!' },
+    { sentence: 'O [ ___ ] tirou um coelho da cartola.', word: 'mágico', options: ['G', 'J'], correct: 0, explanation: 'MÁGICO se escreve com G!' },
+    { sentence: 'As flores coloridas perfumam todo o [ ___ ].', word: 'jardim', options: ['J', 'G'], correct: 0, explanation: 'JARDIM se escreve com J!' }
   ],
   s_ss_c_cedilha: [
-    { word: 'Massa', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'MASSA se escreve com SS entre vogais para manter o som forte de S!' },
-    { word: 'Sol', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'No início de palavras só se usa S simples (nunca SS ou Ç).' },
-    { word: 'Cabeça', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CABEÇA se escreve com Ç antes da vogal A!' },
-    { word: 'Cenoura', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CENOURA se escreve com C (antes de E e I o C tem som de S).' },
-    { word: 'Pássaro', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'PÁSSARO se escreve com SS!' },
-    { word: 'Sapo', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'SAPO começa com S simples.' },
-    { word: 'Coração', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CORAÇÃO se escreve com Ç!' },
-    { word: 'Cidade', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CIDADE se escreve com C!' },
-    { word: 'Osso', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'OSSO se escreve com SS!' },
-    { word: 'Abraço', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'ABRAÇO se escreve com Ç!' }
+    { sentence: 'A mama cozinhou uma [ ___ ] italiana saborosa.', word: 'massa', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'MASSA se escreve com SS entre vogais para manter o som forte de S!' },
+    { sentence: 'O radiante [ ___ ] iluminou toda a praia.', word: 'sol', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'No início de palavras só se usa S simples (nunca SS ou Ç).' },
+    { sentence: 'A garota usava um lacinho fofo na [ ___ ].', word: 'cabeça', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CABEÇA se escreve com Ç antes da vogal A!' },
+    { sentence: 'O coelhinho adorava roer uma [ ___ ] fresca.', word: 'cenoura', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CENOURA se escreve com C (antes de E e I o C tem som de S).' },
+    { sentence: 'O bonito [ ___ ] azul cantava na gaiola.', word: 'pássaro', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'PÁSSARO se escreve com SS!' },
+    { sentence: 'O pequeno [ ___ ] verde deu um salto na lagoa.', word: 'sapo', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'SAPO começa com S simples.' },
+    { sentence: 'Sentiu uma alegria enorme bater no [ ___ ].', word: 'coração', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CORAÇÃO se escreve com Ç!' },
+    { sentence: 'A grande [ ___ ] tem prédios modernos e parques.', word: 'cidade', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CIDADE se escreve com C!' },
+    { sentence: 'O cachorro enterrou um saboroso [ ___ ] no jardim.', word: 'osso', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'OSSO se escreve com SS!' },
+    { sentence: 'Dei um forte [ ___ ] de carinho no meu irmão.', word: 'abraço', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'ABRAÇO se escreve com Ç!' }
   ],
   acento_grafico: [
-    { word: 'Café', options: ['É', 'E'], correct: 0, explanation: 'CAFÉ leva acento agudo no É por ser oxítona aberta!' },
-    { word: 'Árvore', options: ['Á', 'A'], correct: 0, explanation: 'ÁRVORE leva acento agudo no Á por ser proparoxítona!' },
-    { word: 'Lâmpada', options: ['Â', 'A'], correct: 0, explanation: 'LÂMPADA leva acento circunflexo (Â) por ter som fechado e nasal!' },
-    { word: 'Ônibus', options: ['Ô', 'O'], correct: 0, explanation: 'ÔNIBUS leva acento circunflexo (Ô)!' },
-    { word: 'Picolé', options: ['É', 'E'], correct: 0, explanation: 'PICOLÉ leva acento agudo no É!' },
-    { word: 'Mágico', options: ['Á', 'A'], correct: 0, explanation: 'MÁGICO leva acento agudo no Á!' },
-    { word: 'Vovô', options: ['Ô', 'O'], correct: 0, explanation: 'VOVÔ tem som fechado e leva acento circunflexo!' },
-    { word: 'Vovó', options: ['Ó', 'O'], correct: 0, explanation: 'VOVÓ tem som aberto e leva acento agudo!' },
-    { word: 'Rápido', options: ['Á', 'A'], correct: 0, explanation: 'RÁPIDO leva acento agudo no Á!' },
-    { word: 'Música', options: ['Ú', 'U'], correct: 0, explanation: 'MÚSICA leva acento agudo no Ú!' }
+    { sentence: 'Vovô toma um [ ___ ] quente todas as manhãs.', word: 'café', options: ['É', 'E'], correct: 0, explanation: 'CAFÉ leva acento agudo no É por ser oxítona aberta!' },
+    { sentence: 'A alta [ ___ ] centenária dava sombra no quintal.', word: 'árvore', options: ['Á', 'A'], correct: 0, explanation: 'ÁRVORE leva acento agudo no Á por ser proparoxítona!' },
+    { sentence: 'Acendi a [ ___ ] para ler meu livro à noite.', word: 'lâmpada', options: ['Â', 'A'], correct: 0, explanation: 'LÂMPADA leva acento circunflexo (Â) por ter som fechado e nasal!' },
+    { sentence: 'Os passageiros embarcaram no [ ___ ] amarelo.', word: 'ônibus', options: ['Ô', 'O'], correct: 0, explanation: 'ÔNIBUS leva acento circunflexo (Ô)!' },
+    { sentence: 'Comprei um [ ___ ] de morango na sorveteria.', word: 'picolé', options: ['É', 'E'], correct: 0, explanation: 'PICOLÉ leva acento agudo no É!' },
+    { sentence: 'O incrível [ ___ ] fez truques surpreendentes.', word: 'mágico', options: ['Á', 'A'], correct: 0, explanation: 'MÁGICO leva acento agudo no Á!' },
+    { sentence: 'O vovô contou uma história divertida para nós.', word: 'vovô', options: ['Ô', 'O'], correct: 0, explanation: 'VOVÔ tem som fechado e leva acento circunflexo!' },
+    { sentence: 'A vovó fez um bolo de chocolate delicioso.', word: 'vovó', options: ['Ó', 'O'], correct: 0, explanation: 'VOVÓ tem som aberto e leva acento agudo!' },
+    { sentence: 'O atleta correu muito [ ___ ] e venceu a prova.', word: 'rápido', options: ['Á', 'A'], correct: 0, explanation: 'RÁPIDO leva acento agudo no Á!' },
+    { sentence: 'A linda [ ___ ] alegrava todo o ambiente.', word: 'música', options: ['Ú', 'U'], correct: 0, explanation: 'MÚSICA leva acento agudo no Ú!' }
   ]
 };
 
@@ -426,7 +426,7 @@ class ParentReportComponent {
   render(containerEl, playerData) {
     if (!containerEl) return;
     if (!playerData) {
-      containerEl.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 24px;">Nenhum perfil selecionado.</div>`;
+      containerEl.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 24px;">Nenhum perfil selecionado. Faça login para ver as estatísticas.</div>`;
       return;
     }
 
@@ -610,6 +610,7 @@ const MASCOTS = [
 ];
 
 const PROFILES_STORAGE_KEY = 'guardiao_palavras_profiles_v3';
+const SESSION_ACTIVE_PROFILE_KEY = 'guardiao_palavras_session_profile';
 
 class GameEngine {
   constructor() {
@@ -621,28 +622,13 @@ class GameEngine {
       this.profilesData.masterPin = '1234';
     }
 
-    this.activeProfileId = this.profilesData.activeProfileId || null;
-    
-    this.playerData = (this.activeProfileId && this.profilesData.profiles && this.profilesData.profiles[this.activeProfileId])
-      ? this.profilesData.profiles[this.activeProfileId]
+    // Inicializa deslogado se a sessão do navegador estiver limpa ou não tiver selecionado perfil
+    const sessionProfileId = sessionStorage.getItem(SESSION_ACTIVE_PROFILE_KEY);
+    this.activeProfileId = (sessionProfileId && this.profilesData.profiles && this.profilesData.profiles[sessionProfileId])
+      ? sessionProfileId
       : null;
-
-    if (!this.playerData) {
-      const existingProfiles = Object.values(this.profilesData.profiles || {});
-      if (existingProfiles.length > 0) {
-        this.activeProfileId = existingProfiles[0].id;
-        this.playerData = existingProfiles[0];
-        this.profilesData.activeProfileId = this.activeProfileId;
-      } else {
-        const defaultProfile = this.createDefaultPlayerData('Pedro');
-        defaultProfile.id = 'pedro';
-        if (!this.profilesData.profiles) this.profilesData.profiles = {};
-        this.profilesData.profiles['pedro'] = defaultProfile;
-        this.activeProfileId = 'pedro';
-        this.playerData = defaultProfile;
-        this.savePlayerData();
-      }
-    }
+    
+    this.playerData = this.activeProfileId ? this.profilesData.profiles[this.activeProfileId] : null;
 
     this.currentCategory = null;
     this.currentQuestions = [];
@@ -706,8 +692,8 @@ class GameEngine {
 
   async deleteProfile(profileId) {
     const keys = Object.keys(this.profilesData.profiles);
-    if (keys.length <= 1) {
-      return { success: false, message: 'Não é possível excluir o único perfil existente!' };
+    if (keys.length <= 0) {
+      return { success: false, message: 'Nenhum perfil para excluir!' };
     }
 
     try {
@@ -720,8 +706,9 @@ class GameEngine {
 
     delete this.profilesData.profiles[profileId];
     if (this.activeProfileId === profileId) {
-      this.activeProfileId = Object.keys(this.profilesData.profiles)[0];
-      this.playerData = this.profilesData.profiles[this.activeProfileId];
+      this.activeProfileId = null;
+      this.playerData = null;
+      sessionStorage.removeItem(SESSION_ACTIVE_PROFILE_KEY);
     }
     this.savePlayerData();
     return { success: true, message: 'Perfil excluído com sucesso!' };
@@ -834,6 +821,7 @@ class GameEngine {
         }
         this.profilesData.profiles[this.activeProfileId] = this.playerData;
         this.profilesData.activeProfileId = this.activeProfileId;
+        sessionStorage.setItem(SESSION_ACTIVE_PROFILE_KEY, this.activeProfileId);
       }
 
       localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profilesData));
@@ -848,6 +836,24 @@ class GameEngine {
     } catch (e) {
       console.error('Erro ao salvar progresso:', e);
     }
+  }
+
+  logQuestionAnswer(qText, userAns, isCorrect) {
+    if (!this.playerData) return;
+    try {
+      fetch('/api/logs/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profileId: this.playerData.id,
+          profileName: this.playerData.name,
+          categoryId: this.currentCategory ? this.currentCategory.id : 'geral',
+          questionText: qText,
+          userAnswer: userAns,
+          isCorrect: isCorrect
+        })
+      }).catch(() => {});
+    } catch (e) {}
   }
 
   getProfiles() {
@@ -1006,7 +1012,7 @@ class GameEngine {
     let coinsEarned = 0;
 
     if (!this.playerData) {
-      this.playerData = this.createDefaultPlayerData('Pedro');
+      return null;
     }
 
     const catId = this.currentCategory ? this.currentCategory.id : 'geral';
@@ -1034,6 +1040,9 @@ class GameEngine {
     }
 
     this.playerData.level = Math.floor((this.playerData.xp || 0) / 100) + 1;
+
+    // Registra log no banco de dados SQLite
+    this.logQuestionAnswer(q.sentence || q.word, q.options[selectedOptionIndex], isCorrect);
 
     this.currentQuestionIndex++;
     const isLevelFinished = (this.currentQuestionIndex >= this.currentQuestions.length);
@@ -1155,6 +1164,8 @@ class GameEngine {
       const expected = (q.word || '').trim().toLowerCase();
       const isOk = (userAns === expected);
       if (isOk) correctCount++;
+      
+      this.logQuestionAnswer(q.sentence || q.word, userAns, isOk);
       return {
         question: q,
         userAnswer: answersArray[idx],
@@ -1168,7 +1179,7 @@ class GameEngine {
     let gemsEarned = 0;
 
     if (!this.playerData) {
-      this.playerData = this.createDefaultPlayerData('Pedro');
+      return null;
     }
 
     if (isAllCorrect) {
@@ -1252,12 +1263,7 @@ class UIController {
 
   updateHeaderStats() {
     const activeMascot = this.game.getActiveMascot();
-    const playerData = this.game.playerData || {
-      name: 'Criar Perfil / Login',
-      coins: 0,
-      gems: 0,
-      level: 1
-    };
+    const playerData = this.game.playerData;
 
     if (activeMascot && activeMascot.bgGradient) {
       document.body.style.background = activeMascot.bgGradient;
@@ -1270,7 +1276,7 @@ class UIController {
         ? playerData.customProfilePhoto 
         : (activeMascot ? activeMascot.img : null);
 
-      if (displayPhoto) {
+      if (displayPhoto && playerData) {
         userPhotoEl.src = displayPhoto;
         userPhotoEl.style.width = '42px';
         userPhotoEl.style.height = '42px';
@@ -1285,7 +1291,13 @@ class UIController {
 
     const userNameEl = document.getElementById('header-user-name');
     if (userNameEl) {
-      userNameEl.textContent = playerData ? `👤 ${playerData.name}` : `👤 Entrar / Criar Perfil`;
+      userNameEl.textContent = playerData ? `👤 ${playerData.name}` : `🔑 Entrar / Selecionar Perfil`;
+      if (!playerData) {
+        userNameEl.style.color = '#F59E0B';
+        userNameEl.style.fontWeight = '800';
+      } else {
+        userNameEl.style.color = '#FFFFFF';
+      }
     }
 
     if (activeMascot && activeMascot.theme) {
@@ -1293,13 +1305,13 @@ class UIController {
     }
 
     const coinEls = document.querySelectorAll('.global-coins-count');
-    coinEls.forEach(el => el.textContent = playerData.coins || 0);
+    coinEls.forEach(el => el.textContent = playerData ? (playerData.coins || 0) : '--');
 
     const gemEls = document.querySelectorAll('.global-gems-count');
-    gemEls.forEach(el => el.textContent = playerData.gems || 0);
+    gemEls.forEach(el => el.textContent = playerData ? (playerData.gems || 0) : '--');
 
     const levelEls = document.querySelectorAll('.global-player-level');
-    levelEls.forEach(el => el.textContent = playerData.level || 1);
+    levelEls.forEach(el => el.textContent = playerData ? (playerData.level || 1) : '--');
 
     const mascotEls = document.querySelectorAll('.global-active-mascot');
     mascotEls.forEach(el => {
@@ -1381,30 +1393,18 @@ class UIController {
   }
 
   getMaskedParts(question) {
-    if (!question || !question.word) {
-      return { prefix: '', gapText: '[ _____ ]', suffix: '' };
+    if (!question) return { prefix: '', gapText: '[ _____ ]', suffix: '' };
+    
+    if (question.sentence && question.sentence.includes('[ ___ ]')) {
+      const parts = question.sentence.split('[ ___ ]');
+      return {
+        prefix: parts[0] || '',
+        gapText: '[ ___ ]',
+        suffix: parts[1] || ''
+      };
     }
 
-    const word = question.word.trim();
-    const options = question.options || [];
-    const correctIdx = question.correct || 0;
-    const correctOpt = (options[correctIdx] || '').trim();
-
-    if (correctOpt.length > 0 && correctOpt.length <= 3) {
-      const optLower = correctOpt.toLowerCase();
-      const wordLower = word.toLowerCase();
-
-      if (wordLower.endsWith(optLower)) {
-        const prefix = word.substring(0, word.length - correctOpt.length);
-        return { prefix, gapText: '[ ___ ]', suffix: '' };
-      }
-
-      if (wordLower.startsWith(optLower)) {
-        const suffix = word.substring(correctOpt.length);
-        return { prefix: '', gapText: '[ ___ ]', suffix };
-      }
-    }
-
+    const word = (question.sentence || question.word || '').trim();
     return { prefix: '', gapText: `[ ${word} ]`, suffix: '' };
   }
 
@@ -1579,10 +1579,10 @@ class UIController {
     sentencesContainer.innerHTML = matrixData.questions.map((q, idx) => {
       const { prefix, gapText, suffix } = this.getMaskedParts(q);
       return `
-        <div class="matrix-sentence-box" data-index="${idx}" style="background: #020617; border: 2px solid #38BDF8; border-radius: 16px; padding: 16px; margin-bottom: 12px;">
-          <div style="font-size: 0.85rem; color: #F59E0B; font-weight: 800; margin-bottom: 6px;">FRASE ${idx + 1}:</div>
-          <div style="font-size: 1.1rem; color: #FFF; font-weight: 700;">
-            ${prefix} <span class="matrix-slot" data-index="${idx}" style="display: inline-block; min-width: 120px; padding: 6px 14px; background: rgba(56,189,248,0.2); border: 2px dashed #38BDF8; border-radius: 12px; color: #34D399; font-weight: 900; text-align: center; cursor: pointer;">Clique no banco...</span> ${suffix}
+        <div class="matrix-sentence-box" data-index="${idx}" style="background: #020617 !important; border: 2px solid #38BDF8 !important; border-radius: 18px !important; padding: 20px 24px !important; margin-bottom: 16px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;">
+          <div style="font-size: 0.85rem !important; color: #F59E0B !important; font-weight: 800 !important; font-family: var(--font-heading) !important; margin-bottom: 8px !important;">FRASE ${idx + 1}:</div>
+          <div style="font-size: 1.2rem !important; color: #FFFFFF !important; font-weight: 700 !important; line-height: 1.7 !important; font-family: var(--font-body) !important;">
+            ${prefix} <span class="matrix-slot" data-index="${idx}" style="display: inline-block !important; min-width: 140px !important; padding: 8px 18px !important; background: rgba(56,189,248,0.2) !important; border: 2.5px dashed #38BDF8 !important; border-radius: 14px !important; color: #34D399 !important; font-weight: 900 !important; text-align: center !important; cursor: pointer !important; transition: all 0.2s ease !important;">[ Clique no banco... ]</span> ${suffix}
           </div>
         </div>
       `;
@@ -1618,7 +1618,7 @@ class UIController {
         const currentWord = this.userMatrixAnswers[idx];
         if (currentWord) {
           this.userMatrixAnswers[idx] = '';
-          slot.textContent = 'Clique no banco...';
+          slot.textContent = '[ Clique no banco... ]';
           slot.style.borderStyle = 'dashed';
           slot.style.background = 'rgba(56,189,248,0.2)';
 
@@ -1962,7 +1962,6 @@ class UIController {
     parentReport.render(containerEl, this.game.playerData);
   }
 
-  // PAINEL DO ADMINISTRADOR (ADM) & VALIDAÇÃO DE PIN MESTRE
   openAdminPinModal() {
     const pinModal = document.getElementById('admin-pin-modal');
     if (!pinModal) return;
@@ -1996,11 +1995,11 @@ class UIController {
     pinModal.classList.add('active');
   }
 
-  openAdminModal() {
+  async openAdminModal() {
     const adminModal = document.getElementById('admin-modal');
     if (!adminModal) return;
 
-    this.renderAdminProfilesGrid();
+    await this.renderAdminProfilesGrid();
 
     const btnClose = document.getElementById('btn-close-admin-modal');
     if (btnClose) {
@@ -2023,14 +2022,51 @@ class UIController {
     adminModal.classList.add('active');
   }
 
-  renderAdminProfilesGrid() {
+  async renderAdminProfilesGrid() {
     const container = document.getElementById('admin-profiles-grid');
     if (!container) return;
 
     const profiles = this.game.getProfiles();
+    let dbLogsHtml = '';
+
+    try {
+      const res = await fetch('/api/admin/db-dump');
+      if (res.ok) {
+        const dbData = await res.json();
+        if (dbData && dbData.logs && dbData.logs.length > 0) {
+          dbLogsHtml = `
+            <div style="background: #020617; border: 1.5px solid #38BDF8; border-radius: 16px; padding: 16px; margin-top: 16px;">
+              <h4 style="color: #38BDF8; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 10px;">📊 Histórico Recente de Exercícios (SQLite DB):</h4>
+              <div style="max-height: 180px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                  <thead>
+                    <tr style="color: #F59E0B; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                      <th style="padding: 6px;">Usuário</th>
+                      <th style="padding: 6px;">Questão / Frase</th>
+                      <th style="padding: 6px;">Resposta</th>
+                      <th style="padding: 6px;">Resultado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${dbData.logs.map(l => `
+                      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 6px; color: #FFF; font-weight: 700;">${l.profile_name || 'Anônimo'}</td>
+                        <td style="padding: 6px; color: #CBD5E1;">${l.question_text}</td>
+                        <td style="padding: 6px; color: #38BDF8; font-weight: 800;">${l.user_answer}</td>
+                        <td style="padding: 6px; color: ${l.is_correct ? '#34D399' : '#F87171'}; font-weight: 800;">${l.is_correct ? '✅ Acertou' : '❌ Errou'}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }
+      }
+    } catch (e) {}
 
     if (profiles.length === 0) {
-      container.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 20px;">Nenhum usuário cadastrado.</div>`;
+      container.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 20px;">Nenhum usuário cadastrado.</div>` + dbLogsHtml;
       return;
     }
 
@@ -2069,7 +2105,7 @@ class UIController {
           </div>
         </div>
       `;
-    }).join('');
+    }).join('') + dbLogsHtml;
 
     container.querySelectorAll('.btn-admin-reset-pwd').forEach(btn => {
       btn.onclick = async () => {
@@ -2128,6 +2164,7 @@ class UIController {
     if (!modal) return;
 
     this.renderProfilesList();
+    this.updateActiveUserModalPreview();
 
     const btnClose = document.getElementById('btn-close-profile-modal');
     if (btnClose) {
@@ -2180,12 +2217,36 @@ class UIController {
         this.triggerConfetti(40);
         this.updateHeaderStats();
         this.renderProfilesList();
+        this.updateActiveUserModalPreview();
         modal.classList.remove('active');
         alert(`🎉 Perfil do ${name} criado e protegido por senha com sucesso! Boa sorte!`);
       };
     }
 
     modal.classList.add('active');
+  }
+
+  updateActiveUserModalPreview() {
+    const activePlayer = this.game.playerData;
+    const activeMascot = this.game.getActiveMascot();
+    const box = document.getElementById('modal-active-user-box');
+    const imgEl = document.getElementById('modal-active-user-img');
+    const nameEl = document.getElementById('modal-active-user-name');
+    const detailsEl = document.getElementById('modal-active-user-details');
+
+    if (!box || !imgEl || !nameEl || !detailsEl) return;
+
+    if (activePlayer) {
+      box.style.display = 'flex';
+      const photoSrc = activePlayer.customProfilePhoto || activePlayer.profilePhoto || activeMascot.img;
+      imgEl.src = photoSrc;
+      nameEl.textContent = activePlayer.name;
+      detailsEl.textContent = `Nível ${activePlayer.level || 1} • ${activePlayer.coins || 0} Moedas 🪙 • ${activePlayer.gems || 0} Gemas 💎 • Mascote: ${activeMascot.name}`;
+    } else {
+      imgEl.src = activeMascot.img;
+      nameEl.textContent = 'Nenhum Jogador Logado';
+      detailsEl.textContent = 'Selecione um perfil abaixo para fazer login e jogar!';
+    }
   }
 
   renderProfilesList() {
@@ -2196,26 +2257,31 @@ class UIController {
     const activeId = this.game.activeProfileId;
     const activeMascot = this.game.getActiveMascot();
 
+    if (profiles.length === 0) {
+      container.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 20px;">Nenhum perfil criado ainda. Crie o primeiro perfil abaixo!</div>`;
+      return;
+    }
+
     container.innerHTML = profiles.map(p => {
       const isActive = p.id === activeId;
       const mascot = (this.game.getMascots().find(m => m.id === (p.activeMascot || 'aranha'))) || activeMascot || {};
       
       const photoSrc = p.customProfilePhoto || p.profilePhoto || mascot.img;
       const photoHtml = photoSrc 
-        ? `<img class="profile-card-photo" src="${photoSrc}" alt="${p.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />`
-        : `<div class="profile-card-avatar-badge" style="font-size: 2rem;">${mascot.icon || '👤'}</div>`;
+        ? `<img class="profile-card-photo" src="${photoSrc}" alt="${p.name}" style="width: 58px !important; height: 58px !important; min-width: 58px !important; min-height: 58px !important; border-radius: 50% !important; object-fit: cover !important; border: 2.5px solid ${isActive ? '#10B981' : '#38BDF8'} !important; display: block !important;" />`
+        : `<div class="profile-card-avatar-badge" style="font-size: 2.2rem;">${mascot.icon || '👤'}</div>`;
 
       return `
-        <div class="profile-select-card ${isActive ? 'active-profile' : ''}" data-id="${p.id}" style="background: #020617; border: 2px solid ${isActive ? '#10B981' : '#38BDF8'}; border-radius: 16px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
-          <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="profile-select-card ${isActive ? 'active-profile' : ''}" data-id="${p.id}" style="background: #020617 !important; border: 2.5px solid ${isActive ? '#10B981' : '#38BDF8'} !important; border-radius: 18px !important; padding: 16px !important; margin-bottom: 12px !important; display: flex !important; align-items: center !important; justify-content: space-between !important; cursor: pointer !important; box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;">
+          <div style="display: flex !important; align-items: center !important; gap: 14px !important;">
             ${photoHtml}
             <div>
-              <div style="color: #FFF; font-weight: 800; font-size: 1.1rem;">${p.name} ${isActive ? '✅' : ''}</div>
-              <div style="color: #94A3B8; font-size: 0.85rem;">Nível ${p.level || 1} • ${p.coins || 0} Moedas 🪙</div>
+              <div style="color: #FFF !important; font-weight: 800 !important; font-size: 1.15rem !important; font-family: var(--font-heading) !important;">${p.name} ${isActive ? '✅ (Logado)' : ''}</div>
+              <div style="color: #94A3B8 !important; font-size: 0.85rem !important;">Nível ${p.level || 1} • ${p.coins || 0} Moedas 🪙</div>
             </div>
           </div>
-          <button class="btn btn-3d ${isActive ? 'btn-success' : 'btn-primary'} select-profile-btn" data-id="${p.id}">
-            ${isActive ? 'ATIVO' : 'JOGAR'}
+          <button class="btn btn-3d ${isActive ? 'btn-success' : 'btn-primary'} select-profile-btn" data-id="${p.id}" style="font-weight: 800 !important;">
+            ${isActive ? 'CONECTADO' : '🔑 LOGAR E JOGAR'}
           </button>
         </div>
       `;
@@ -2233,6 +2299,7 @@ class UIController {
           this.game.selectProfile(profileId);
           this.updateHeaderStats();
           this.renderProfilesList();
+          this.updateActiveUserModalPreview();
           document.getElementById('profile-modal').classList.remove('active');
         }
       };
@@ -2263,6 +2330,7 @@ class UIController {
           modal.classList.remove('active');
           document.getElementById('profile-modal').classList.remove('active');
           this.updateHeaderStats();
+          this.updateActiveUserModalPreview();
           soundManager.playFanfare();
         } else {
           if (errorMsg) errorMsg.style.display = 'block';
@@ -2410,7 +2478,7 @@ document.addEventListener('DOMContentLoaded', () => {
   game.fetchDbProfiles().then(() => {
     ui.updateHeaderStats();
     if (!game.hasActiveProfile()) {
-      ui.openProfileModal({ mandatory: true });
+      ui.openProfileModal();
     }
   });
 
@@ -2465,6 +2533,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnStartGame = document.getElementById('btn-start-game');
   if (btnStartGame) {
     btnStartGame.onclick = () => {
+      if (!game.hasActiveProfile()) {
+        alert('Por favor, selecione ou crie um perfil para começar a jogar!');
+        ui.openProfileModal();
+        return;
+      }
       ui.renderCategorySelection(
         document.getElementById('category-cards-container'),
         (categoryId) => handleStartLevel(categoryId)
@@ -2476,6 +2549,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnStartMatrix = document.getElementById('btn-start-matrix-puzzle');
   if (btnStartMatrix) {
     btnStartMatrix.onclick = () => {
+      if (!game.hasActiveProfile()) {
+        alert('Por favor, selecione ou crie um perfil para começar a jogar!');
+        ui.openProfileModal();
+        return;
+      }
       ui.renderMatrixGame();
       ui.showScreen('matrix-game-screen');
     };

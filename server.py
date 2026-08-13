@@ -35,6 +35,17 @@ def init_db():
             stats TEXT DEFAULT '{}',
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS question_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            profile_id TEXT,
+            profile_name TEXT,
+            category_id TEXT,
+            question_text TEXT,
+            user_answer TEXT,
+            is_correct INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
     ''')
     conn.commit()
     
@@ -295,20 +306,44 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json({'success': False, 'message': str(e)}, 500)
                 return
 
-        elif parsed.path == '/api/profiles/delete':
-            profile_id = payload.get('id')
+        elif parsed.path == '/api/logs/add':
+            profile_id = payload.get('profileId')
+            profile_name = payload.get('profileName')
+            cat_id = payload.get('categoryId')
+            q_text = payload.get('questionText')
+            user_ans = payload.get('userAnswer')
+            is_corr = 1 if payload.get('isCorrect') else 0
+
             try:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM profiles WHERE id = ?", (profile_id,))
+                cursor.execute('''
+                    INSERT INTO question_logs (profile_id, profile_name, category_id, question_text, user_answer, is_correct)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (profile_id, profile_name, cat_id, q_text, user_ans, is_corr))
                 conn.commit()
                 conn.close()
-
-                self.send_json({'success': True, 'message': 'Perfil excluído do banco de dados!'})
+                self.send_json({'success': True})
                 return
             except Exception as e:
-                print("Erro ao excluir perfil no SQLite:", e)
-                self.send_json({'success': False, 'message': str(e)}, 500)
+                self.send_json({'success': False, 'error': str(e)}, 500)
+                return
+
+        elif parsed.path == '/api/admin/db-dump':
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT id, name, coins, gems, level, active_mascot, updated_at FROM profiles")
+                profiles = [dict(row) for row in cursor.fetchall()]
+
+                cursor.execute("SELECT * FROM question_logs ORDER BY id DESC LIMIT 100")
+                logs = [dict(row) for row in cursor.fetchall()]
+                conn.close()
+
+                self.send_json({'success': True, 'profiles': profiles, 'logs': logs})
+                return
+            except Exception as e:
+                self.send_json({'success': False, 'error': str(e)}, 500)
                 return
 
         else:
