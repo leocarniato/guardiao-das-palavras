@@ -1341,18 +1341,21 @@ class GameEngine {
             const freshMap = {};
             data.profiles.forEach(p => {
               freshMap[p.id] = {
-                ...(this.profilesData.profiles[p.id] || this.createDefaultPlayerData(p.name)),
+                ...this.createDefaultPlayerData(p.name),
                 ...p,
                 passwordHash: p.hasPassword ? 'DB_PROTECTED' : ''
               };
             });
             this.profilesData.profiles = freshMap;
-            
-            if (this.activeProfileId && freshMap[this.activeProfileId]) {
+
+            const isSessionLoggedIn = sessionStorage.getItem('guardiao_active_session_login');
+            if (isSessionLoggedIn && this.activeProfileId && freshMap[this.activeProfileId]) {
               this.playerData = freshMap[this.activeProfileId];
-            } else if (data.profiles.length > 0 && !this.activeProfileId) {
-              this.activeProfileId = data.profiles[0].id;
-              this.playerData = freshMap[this.activeProfileId];
+            } else {
+              this.activeProfileId = null;
+              this.playerData = null;
+              sessionStorage.removeItem(SESSION_ACTIVE_PROFILE_KEY);
+              sessionStorage.removeItem('guardiao_active_session_login');
             }
 
             this.savePlayerData();
@@ -1481,6 +1484,7 @@ class GameEngine {
 
     this.activeProfileId = profileId;
     this.playerData = this.profilesData.profiles[profileId];
+    sessionStorage.setItem('guardiao_active_session_login', 'true');
     this.savePlayerData();
     return true;
   }
@@ -3097,8 +3101,9 @@ document.addEventListener('DOMContentLoaded', () => {
   game.fetchAdminPin();
   game.fetchDbProfiles().then(() => {
     ui.updateHeaderStats();
-    if (!game.hasActiveProfile()) {
-      ui.openProfileModal();
+    const isSessionLoggedIn = sessionStorage.getItem('guardiao_active_session_login');
+    if (!isSessionLoggedIn || !game.hasActiveProfile()) {
+      ui.openProfileModal({ mandatory: true });
     }
   });
 
