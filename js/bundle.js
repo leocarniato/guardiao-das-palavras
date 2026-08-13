@@ -1,75 +1,74 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Estrutura Dupla de Frases:
- * 1. Modo Aventura: Frase com a lacuna da letra DENTRO da palavra (ex: co[ ___ ]putador)
- * 2. Batalha de Puzzles: Frase com a lacuna da PALAVRA INTEIRA (ex: O [ ___ ] defendeu o país)
- * Mascote Gigante no Menu (260px), Painel ADM 100% Funcional e BGM Automático.
+ * 1. Restauração Completa do Menu de Missões Temáticas (Futebol, Homem-Aranha, Roblox, Minion, Arena Gamer, F1, Batman) igual à Foto 2!
+ * 2. Estrutura Dupla de Frases para Fases e Puzzles.
+ * 3. Proteção do Banco de Dados SQLite (guardiao.db) para nunca mais apagar usuários nas atualizações do GitHub.
  */
 
-// 1. DADOS DE PERGUNTAS E CATEGORIAS COM FRASES DUPLAS (MODO NÍVEL & MODO MATRIX)
+// 1. DADOS DE PERGUNTAS E CATEGORIAS COM OS TEMAS DE PERSONAGENS EXATOS DA FOTO 2
 const CATEGORIES = [
   {
     id: 'ao_am',
-    title: 'Missão ÃO ou AM (Futuro vs Passado)',
-    subtitle: 'Eles cantaram ontem ou cantarão amanhã?',
-    description: 'Aprenda quando usar -ÃO para ações no futuro e -AM para ações no passado!',
-    icon: '🔮',
-    bgGradient: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
-    badgeColor: '#818CF8'
+    title: 'Missão Futebol',
+    subtitle: 'Passado (-am) vs Futuro (-ão)',
+    description: 'Partida de Futebol! Marque um golaço no passado (-AM) ou no futuro (-ÃO)!',
+    icon: '⚽',
+    bgGradient: 'linear-gradient(135deg, #047857 0%, #10B981 100%)',
+    badgeColor: '#10B981'
   },
   {
     id: 'som_z',
-    title: 'Missão Som de Z (Z, S ou X)',
-    subtitle: 'Mesa, Beleza ou Exemplo?',
-    description: 'Descubra qual letra faz o som de Z em cada palavra!',
-    icon: '⚡',
-    bgGradient: 'linear-gradient(135deg, #064E3B 0%, #047857 100%)',
-    badgeColor: '#34D399'
+    title: 'Teia do Teioso',
+    subtitle: 'Homem-Aranha & Som de Z',
+    description: 'Lance a teia do Aranha Gamer e descubra se o som de Z é com S ou Z!',
+    icon: '🕷️',
+    bgGradient: 'linear-gradient(135deg, #B91C1C 0%, #EF4444 100%)',
+    badgeColor: '#EF4444'
   },
   {
     id: 'm_pb',
-    title: 'Missão M antes de P e B',
-    subtitle: 'Campo, Tambor ou Anjo?',
-    description: 'Regra de ouro: Antes de P e B só se usa M!',
-    icon: '🛡️',
-    bgGradient: 'linear-gradient(135deg, #701A75 0%, #A21CAF 100%)',
-    badgeColor: '#F0ABFC'
+    title: 'Mundo Roblox',
+    subtitle: 'Construção de Blocos',
+    description: 'Regra Pro do Roblox: Coloque o bloco M antes do P e do B!',
+    icon: '🤖',
+    bgGradient: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)',
+    badgeColor: '#0EA5E9'
   },
   {
     id: 'ch_x',
-    title: 'Missão CH ou X',
-    subtitle: 'Chuva, Xícara ou Caixa?',
-    description: 'Desvende o enigma do som de CH e X nas palavras!',
-    icon: '🕵️',
-    bgGradient: 'linear-gradient(135deg, #7C2D12 0%, #C2410C 100%)',
-    badgeColor: '#FB923C'
+    title: 'Desafio Minion',
+    subtitle: 'Banana Power & Mistérios',
+    description: 'Bananahaha! Ajude os Minions a escolher CH ou X!',
+    icon: '🍌',
+    bgGradient: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)',
+    badgeColor: '#F59E0B'
   },
   {
     id: 'g_j',
-    title: 'Missão G ou J',
-    subtitle: 'Girafa, Jibóia ou Gelo?',
-    description: 'Treine a grafia correta de palavras com G e J!',
-    icon: '🦒',
-    bgGradient: 'linear-gradient(135deg, #14532D 0%, #15803D 100%)',
-    badgeColor: '#4ADE80'
+    title: 'Arena Gamer',
+    subtitle: 'Batalha dos Games',
+    description: 'Level Up! Derrote o Chefão escolhendo a letra G ou J!',
+    icon: '🎮',
+    bgGradient: 'linear-gradient(135deg, #7E22CE 0%, #A855F7 100%)',
+    badgeColor: '#A855F7'
   },
   {
     id: 's_ss_c_cedilha',
-    title: 'Missão S, SS, C ou Ç',
-    subtitle: 'Massa, Sol, Cabeça ou Cenoura?',
-    description: 'Mestre da escrita: Acerte a grafia correta do som de S!',
-    icon: '🎯',
-    bgGradient: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)',
-    badgeColor: '#38BDF8'
+    title: 'Pista Veloz',
+    subtitle: 'Corrida de Fórmula 1',
+    description: 'Acelere fundo para vencer a corrida do som de S!',
+    icon: '🏎️',
+    bgGradient: 'linear-gradient(135deg, #BE123C 0%, #FB7185 100%)',
+    badgeColor: '#EC4899'
   },
   {
     id: 'acento_grafico',
-    title: 'Missão Acentuação Mágica',
-    subtitle: 'Café, Árvore, Lâmpada ou Ônibus?',
-    description: 'Coloque os acentos agudo (´) e circunflexo (^) nos lugares certos!',
-    icon: '✨',
-    bgGradient: 'linear-gradient(135deg, #581C87 0%, #7E22CE 100%)',
-    badgeColor: '#C084FC'
+    title: 'Gotham da Noite',
+    subtitle: 'Batman & Acentuação Mágica',
+    description: 'Ajude o Batman a iluminar Gotham escolhendo se a palavra tem acento ou não!',
+    icon: '🦇',
+    bgGradient: 'linear-gradient(135deg, #334155 0%, #64748B 100%)',
+    badgeColor: '#94A3B8'
   }
 ];
 
@@ -974,7 +973,7 @@ class ParentReportComponent {
 
       return `
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <td style="padding: 12px; font-weight: 700; color: #FFF; font-family: var(--font-body);">${cat.icon} ${cat.title.split('(')[0]}</td>
+          <td style="padding: 12px; font-weight: 700; color: #FFF; font-family: var(--font-body);">${cat.icon} ${cat.title}</td>
           <td style="padding: 12px; text-align: center; color: #38BDF8; font-weight: 700;">${st.attempts}</td>
           <td style="padding: 12px; text-align: center; color: #34D399; font-weight: 700;">${st.correct}</td>
           <td style="padding: 12px; text-align: center; color: #F87171; font-weight: 700;">${st.incorrect}</td>
@@ -1862,6 +1861,7 @@ class UIController {
     }
   }
 
+  // RENDERIZAÇÃO EXATA DO MENU DE MISSÕES IGUAL À FOTO 2 ENVIADA PELO USUÁRIO!
   renderCategorySelection(containerEl, onSelectCategory) {
     if (!containerEl) return;
     const playerData = this.game.playerData || { stars: {} };
@@ -1884,7 +1884,7 @@ class UIController {
               <span class="cat-icon-badge" style="font-size: 2.8rem !important; background: rgba(0,0,0,0.35) !important; padding: 10px 16px !important; border-radius: 18px !important; border: 1.5px solid rgba(255,255,255,0.3) !important;">${cat.icon}</span>
               <div>
                 <span style="font-family: 'Orbitron', sans-serif !important; font-size: 0.8rem !important; color: #FDE047 !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important;">MISSÃO ORTOGRÁFICA</span>
-                <h4 style="font-family: 'Orbitron', sans-serif !important; font-size: 1.15rem !important; color: #FFFFFF !important; font-weight: 800 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;">${cat.title.split('(')[0]}</h4>
+                <h4 style="font-family: 'Orbitron', sans-serif !important; font-size: 1.15rem !important; color: #FFFFFF !important; font-weight: 800 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;">${cat.icon} ${cat.title}</h4>
               </div>
             </div>
             <div class="cat-stars" style="display: flex !important; gap: 4px !important; background: rgba(0,0,0,0.4) !important; padding: 6px 10px !important; border-radius: 20px !important;">${starsHTML}</div>
@@ -1939,7 +1939,7 @@ class UIController {
     const activeMascot = this.game.getActiveMascot();
     const catBadge = document.querySelector('.game-cat-badge');
     if (catBadge && this.game.currentCategory) {
-      catBadge.textContent = this.game.currentCategory.title.split('(')[0];
+      catBadge.textContent = this.game.currentCategory.title;
       catBadge.style.background = this.game.currentCategory.badgeColor || '#38BDF8';
     }
 
