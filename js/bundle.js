@@ -1,8 +1,8 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Exercícios com frases completas e lacunas perfeitas, Matrix Puzzle corrigido,
- * Histórico gravado no Banco de Dados SQLite, Exibição de foto grande no Perfil,
- * Painel ADM com logs em tempo real e Login/Seleção de Perfil no início.
+ * Mascote Gigante no Menu (260px), Temática do Mascote em Cada Atividade,
+ * Música BGM Procedural Automática (Web Audio API), Exercícios com Frases Completas,
+ * SQLite DB Logging e Foto Grande no Perfil.
  */
 
 // 1. DADOS DE PERGUNTAS E CATEGORIAS COM FRASES CONTEXTUAIS COMPLETAS
@@ -159,13 +159,14 @@ const QUESTIONS_DATA = {
   ]
 };
 
-// 2. GERENCIADOR DE ÁUDIO E EFEITOS SONOROS
+// 2. GERENCIADOR DE ÁUDIO E MÚSICA BGM PROCEDURAL (WEB AUDIO API + MP3)
 class SoundManager {
   constructor() {
     this.audioCtx = null;
     this.bgmAudio = null;
     this.isBGMPlaying = false;
     this.bgmVolume = 0.25;
+    this.synthBgmInterval = null;
 
     this.themeBGMMap = {
       'theme-spider': 'js/audio/bgm_spider.mp3',
@@ -310,24 +311,68 @@ class SoundManager {
     }
   }
 
+  // Sintetizador Procedural de Música BGM + MP3 Fallback (Garante áudio contínuo 100% garantido)
   startBGM() {
+    this.initContext();
+    this.isBGMPlaying = true;
+
+    if (!this.synthBgmInterval) {
+      const themeChords = {
+        'theme-spider': [220, 261.63, 329.63, 392.00], // A minor epic
+        'theme-soccer': [261.63, 329.63, 392.00, 523.25], // C major hero
+        'theme-blox': [174.61, 220, 261.63, 349.23], // F major 8-bit
+        'theme-batman': [146.83, 174.61, 220, 293.66], // D minor dark
+        'theme-minion': [293.66, 369.99, 440, 587.33], // D major fun
+        'theme-dragon': [130.81, 164.81, 196, 261.63] // C minor epic
+      };
+
+      const chord = themeChords[this.currentTheme] || themeChords['theme-spider'];
+      let step = 0;
+
+      this.synthBgmInterval = setInterval(() => {
+        if (!this.isBGMPlaying || !this.audioCtx) return;
+        try {
+          const now = this.audioCtx.currentTime;
+          const freq = chord[step % chord.length];
+
+          const osc = this.audioCtx.createOscillator();
+          const gain = this.audioCtx.createGain();
+
+          osc.type = (this.currentTheme === 'theme-blox') ? 'square' : 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+
+          gain.gain.setValueAtTime(0.035, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+          osc.connect(gain);
+          gain.connect(this.audioCtx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.35);
+
+          step++;
+        } catch (e) {}
+      }, 420);
+    }
+
     if (!this.bgmAudio) {
       const src = this.themeBGMMap[this.currentTheme] || this.themeBGMMap['theme-spider'];
       this.bgmAudio = new Audio(src);
       this.bgmAudio.loop = true;
       this.bgmAudio.volume = this.bgmVolume;
     }
-    this.bgmAudio.play().then(() => {
-      this.isBGMPlaying = true;
-    }).catch(e => {
-      console.log("Aguardando clique do usuário para BGM:", e);
-    });
+
+    this.bgmAudio.play().catch(() => {});
   }
 
   pauseBGM() {
+    this.isBGMPlaying = false;
+    if (this.synthBgmInterval) {
+      clearInterval(this.synthBgmInterval);
+      this.synthBgmInterval = null;
+    }
     if (this.bgmAudio) {
       this.bgmAudio.pause();
-      this.isBGMPlaying = false;
     }
   }
 
@@ -335,17 +380,9 @@ class SoundManager {
     if (this.currentTheme === themeClass) return;
     this.currentTheme = themeClass;
 
-    const newSrc = this.themeBGMMap[themeClass] || this.themeBGMMap['theme-spider'];
-    if (this.bgmAudio) {
-      const wasPlaying = this.isBGMPlaying;
-      this.bgmAudio.pause();
-      this.bgmAudio = new Audio(newSrc);
-      this.bgmAudio.loop = true;
-      this.bgmAudio.volume = this.bgmVolume;
-
-      if (wasPlaying) {
-        this.bgmAudio.play().catch(() => {});
-      }
+    if (this.isBGMPlaying) {
+      this.pauseBGM();
+      this.startBGM();
     }
   }
 
@@ -622,7 +659,6 @@ class GameEngine {
       this.profilesData.masterPin = '1234';
     }
 
-    // Inicializa deslogado se a sessão do navegador estiver limpa ou não tiver selecionado perfil
     const sessionProfileId = sessionStorage.getItem(SESSION_ACTIVE_PROFILE_KEY);
     this.activeProfileId = (sessionProfileId && this.profilesData.profiles && this.profilesData.profiles[sessionProfileId])
       ? sessionProfileId
@@ -1041,7 +1077,6 @@ class GameEngine {
 
     this.playerData.level = Math.floor((this.playerData.xp || 0) / 100) + 1;
 
-    // Registra log no banco de dados SQLite
     this.logQuestionAnswer(q.sentence || q.word, q.options[selectedOptionIndex], isCorrect);
 
     this.currentQuestionIndex++;
@@ -1318,25 +1353,30 @@ class UIController {
       el.textContent = `${activeMascot.icon} ${activeMascot.name}`;
     });
 
+    // FOTO DO PERSONAGEM BEM MAIOR NO MENU PRINCIPAL (260px x 260px)
     const heroMascotContainer = document.querySelector('.hero-mascot-container');
     if (heroMascotContainer && activeMascot) {
+      heroMascotContainer.style.width = '260px';
+      heroMascotContainer.style.height = '260px';
       if (activeMascot.img) {
         heroMascotContainer.innerHTML = `
-          <img class="hero-mascot-real-img" src="${activeMascot.img}" alt="${activeMascot.name}" />
+          <img class="hero-mascot-real-img" src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 260px !important; height: 260px !important; border-radius: 50% !important; object-fit: cover !important; object-position: center top !important; border: 4px solid ${activeMascot.neonColor || '#38BDF8'} !important; box-shadow: 0 0 45px ${activeMascot.neonColor || '#38BDF8'} !important;" />
           <span class="hero-sparkles">⚡</span>
         `;
       } else {
         heroMascotContainer.innerHTML = `
-          <span class="hero-mascot-icon">${activeMascot.icon || '🕷️'}</span>
+          <span class="hero-mascot-icon" style="font-size: 8rem;">${activeMascot.icon || '🕷️'}</span>
           <span class="hero-sparkles">⚡</span>
         `;
       }
     }
   }
 
+  // RENDERIZAÇÃO DAS MISSÕES COM A FOTO E TEMÁTICA DO PERSONAGEM EQUIPADO
   renderCategorySelection(containerEl, onSelectCategory) {
     if (!containerEl) return;
     const playerData = this.game.playerData || { stars: {} };
+    const activeMascot = this.game.getActiveMascot();
 
     containerEl.style.cssText = 'display: grid !important; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important; gap: 24px !important; padding-bottom: 40px !important;';
 
@@ -1350,12 +1390,13 @@ class UIController {
       ).join('');
 
       return `
-        <div class="category-card" data-id="${cat.id}" style="background: #0F172A !important; border: 2.5px solid #38BDF8 !important; border-radius: 24px !important; padding: 24px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; gap: 16px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.6) !important; cursor: pointer !important; transition: all 0.2s ease !important;">
-          <div class="cat-banner-header" style="background: ${cat.bgGradient} !important; border-radius: 16px !important; padding: 18px !important; display: flex !important; align-items: center !important; justify-content: space-between !important; box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;">
+        <div class="category-card" data-id="${cat.id}" style="background: #0F172A !important; border: 2.5px solid ${activeMascot.neonColor || '#38BDF8'} !important; border-radius: 24px !important; padding: 24px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; gap: 16px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.6) !important; cursor: pointer !important; transition: all 0.2s ease !important;">
+          <!-- BANNER COM A TEMÁTICA E FOTO DO HEROI SELECIONADO -->
+          <div class="cat-banner-header" style="background: ${cat.bgGradient} !important; border-radius: 16px !important; padding: 16px !important; display: flex !important; align-items: center !important; justify-content: space-between !important; border: 2px solid ${activeMascot.neonColor || '#38BDF8'} !important; box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;">
             <div style="display: flex !important; align-items: center !important; gap: 14px !important;">
-              <span class="cat-icon-badge" style="font-size: 3rem !important; background: rgba(0,0,0,0.3) !important; padding: 8px 14px !important; border-radius: 16px !important; border: 1.5px solid rgba(255,255,255,0.3) !important;">${cat.icon}</span>
+              <img src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 60px !important; height: 60px !important; min-width: 60px !important; min-height: 60px !important; border-radius: 50% !important; object-fit: cover !important; border: 2.5px solid #34D399 !important; box-shadow: 0 0 18px rgba(52,211,153,0.6) !important; display: block !important;" />
               <div>
-                <span style="font-family: 'Orbitron', sans-serif !important; font-size: 0.8rem !important; color: #FDE047 !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important;">MISSÃO ORTOGRÁFICA</span>
+                <span style="font-family: 'Orbitron', sans-serif !important; font-size: 0.8rem !important; color: #FDE047 !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important;">⚡ ${activeMascot.name}</span>
                 <h4 style="font-family: 'Orbitron', sans-serif !important; font-size: 1.15rem !important; color: #FFFFFF !important; font-weight: 800 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;">${cat.title.split('(')[0]}</h4>
               </div>
             </div>
@@ -1378,7 +1419,7 @@ class UIController {
           </div>
 
           <button class="btn btn-3d btn-primary btn-block play-cat-btn" style="background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%) !important; color: #FFFFFF !important; font-family: 'Orbitron', sans-serif !important; font-weight: 800 !important; font-size: 1.1rem !important; padding: 14px 20px !important; border-radius: 16px !important; border: none !important; cursor: pointer !important; box-shadow: 0 6px 0 #0369A1 !important; margin-top: 6px !important;">
-            ▶️ JOGAR AGORA
+            ▶️ JOGAR COM ${activeMascot.name.toUpperCase()}
           </button>
         </div>
       `;
@@ -1427,10 +1468,13 @@ class UIController {
       progressFill.style.width = `${percent}%`;
     }
 
+    // AVATAR DO MASCOTE DE 100PX EM JOGO COM BORDA DESTAQUE
     const mascotAvatar = document.querySelector('.game-mascot-avatar');
     if (mascotAvatar) {
+      mascotAvatar.style.width = '100px';
+      mascotAvatar.style.height = '100px';
       if (activeMascot.img) {
-        mascotAvatar.innerHTML = `<img src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
+        mascotAvatar.innerHTML = `<img src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 100px !important; height: 100px !important; object-fit: cover !important; border-radius: 50% !important; display: block !important;" />`;
       } else {
         mascotAvatar.textContent = activeMascot.icon || '🕷️';
       }
@@ -1567,6 +1611,7 @@ class UIController {
   }
 
   renderMatrixGame() {
+    const activeMascot = this.game.getActiveMascot();
     const matrixData = this.game.startMatrixPuzzle();
     const sentencesContainer = document.getElementById('matrix-sentences-container');
     const wordBankContainer = document.getElementById('matrix-word-bank');
@@ -1576,7 +1621,15 @@ class UIController {
 
     this.userMatrixAnswers = Array(matrixData.questions.length).fill('');
 
-    sentencesContainer.innerHTML = matrixData.questions.map((q, idx) => {
+    sentencesContainer.innerHTML = `
+      <div style="background: #020617; border: 2px solid ${activeMascot.neonColor || '#38BDF8'}; border-radius: 16px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px;">
+        <img src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />
+        <div>
+          <span style="color: #34D399; font-weight: 800; font-family: var(--font-heading); font-size: 0.85rem;">⚡ ${activeMascot.name} RECOMENDA:</span>
+          <p style="color: #FFF; font-weight: 700; margin: 0;">"Leia com atenção e encaixe a palavra correta em cada lacuna!"</p>
+        </div>
+      </div>
+    ` + matrixData.questions.map((q, idx) => {
       const { prefix, gapText, suffix } = this.getMaskedParts(q);
       return `
         <div class="matrix-sentence-box" data-index="${idx}" style="background: #020617 !important; border: 2px solid #38BDF8 !important; border-radius: 18px !important; padding: 20px 24px !important; margin-bottom: 16px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;">
@@ -2455,14 +2508,23 @@ class UIController {
 document.addEventListener('DOMContentLoaded', () => {
   const game = new GameEngine();
   const ui = new UIController(game);
+  window.gameEngineInstance = game;
 
-  const unlockAudio = () => {
+  // AUTO-PLAY DA MÚSICA BGM AO CLICAR EM QUALQUER LUGAR DA TELA
+  const autoPlayMusic = () => {
     soundManager.initContext();
-    document.removeEventListener('click', unlockAudio);
-    document.removeEventListener('touchstart', unlockAudio);
+    soundManager.startBGM();
+    const bgmBtn = document.getElementById('btn-toggle-bgm');
+    if (bgmBtn) {
+      const iconSpan = bgmBtn.querySelector('.bgm-icon');
+      if (iconSpan) iconSpan.textContent = '🎵 Música: ON';
+      bgmBtn.classList.add('active');
+    }
+    document.removeEventListener('click', autoPlayMusic);
+    document.removeEventListener('touchstart', autoPlayMusic);
   };
-  document.addEventListener('click', unlockAudio);
-  document.addEventListener('touchstart', unlockAudio);
+  document.addEventListener('click', autoPlayMusic);
+  document.addEventListener('touchstart', autoPlayMusic);
 
   const btnToggleBGM = document.getElementById('btn-toggle-bgm');
   if (btnToggleBGM) {
