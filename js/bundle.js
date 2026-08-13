@@ -1,11 +1,10 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Mascote Gigante no Menu (260px), Temática do Mascote em Cada Atividade,
- * Música BGM Procedural Automática (Web Audio API), Exercícios com Frases Completas,
- * SQLite DB Logging e Foto Grande no Perfil.
+ * Ícones Temáticos Exclusivos para Cada Missão, Mascote Gigante no Menu (260px),
+ * Painel ADM 100% Funcional (com ou sem backend) e BGM Automático.
  */
 
-// 1. DADOS DE PERGUNTAS E CATEGORIAS COM FRASES CONTEXTUAIS COMPLETAS
+// 1. DADOS DE PERGUNTAS E CATEGORIAS COM ÍCONES E GRADIENTES DIVERSIFICADOS
 const CATEGORIES = [
   {
     id: 'ao_am',
@@ -37,7 +36,7 @@ const CATEGORIES = [
   {
     id: 'ch_x',
     title: 'Missão CH ou X',
-    subtitle: 'Chuva, Xícara ou Caicha?',
+    subtitle: 'Chuva, Xícara ou Caixa?',
     description: 'Desvende o enigma do som de CH e X nas palavras!',
     icon: '🕵️',
     bgGradient: 'linear-gradient(135deg, #7C2D12 0%, #C2410C 100%)',
@@ -159,7 +158,7 @@ const QUESTIONS_DATA = {
   ]
 };
 
-// 2. GERENCIADOR DE ÁUDIO E MÚSICA BGM PROCEDURAL (WEB AUDIO API + MP3)
+// 2. GERENCIADOR DE ÁUDIO E EFEITOS SONOROS
 class SoundManager {
   constructor() {
     this.audioCtx = null;
@@ -311,19 +310,18 @@ class SoundManager {
     }
   }
 
-  // Sintetizador Procedural de Música BGM + MP3 Fallback (Garante áudio contínuo 100% garantido)
   startBGM() {
     this.initContext();
     this.isBGMPlaying = true;
 
     if (!this.synthBgmInterval) {
       const themeChords = {
-        'theme-spider': [220, 261.63, 329.63, 392.00], // A minor epic
-        'theme-soccer': [261.63, 329.63, 392.00, 523.25], // C major hero
-        'theme-blox': [174.61, 220, 261.63, 349.23], // F major 8-bit
-        'theme-batman': [146.83, 174.61, 220, 293.66], // D minor dark
-        'theme-minion': [293.66, 369.99, 440, 587.33], // D major fun
-        'theme-dragon': [130.81, 164.81, 196, 261.63] // C minor epic
+        'theme-spider': [220, 261.63, 329.63, 392.00],
+        'theme-soccer': [261.63, 329.63, 392.00, 523.25],
+        'theme-blox': [174.61, 220, 261.63, 349.23],
+        'theme-batman': [146.83, 174.61, 220, 293.66],
+        'theme-minion': [293.66, 369.99, 440, 587.33],
+        'theme-dragon': [130.81, 164.81, 196, 261.63]
       };
 
       const chord = themeChords[this.currentTheme] || themeChords['theme-spider'];
@@ -1372,11 +1370,10 @@ class UIController {
     }
   }
 
-  // RENDERIZAÇÃO DAS MISSÕES COM A FOTO E TEMÁTICA DO PERSONAGEM EQUIPADO
+  // RENDERIZAÇÃO DAS MISSÕES COM CADA ÍCONE E TEMÁTICA EXCLUSIVA DA MISSÃO
   renderCategorySelection(containerEl, onSelectCategory) {
     if (!containerEl) return;
     const playerData = this.game.playerData || { stars: {} };
-    const activeMascot = this.game.getActiveMascot();
 
     containerEl.style.cssText = 'display: grid !important; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important; gap: 24px !important; padding-bottom: 40px !important;';
 
@@ -1390,13 +1387,13 @@ class UIController {
       ).join('');
 
       return `
-        <div class="category-card" data-id="${cat.id}" style="background: #0F172A !important; border: 2.5px solid ${activeMascot.neonColor || '#38BDF8'} !important; border-radius: 24px !important; padding: 24px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; gap: 16px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.6) !important; cursor: pointer !important; transition: all 0.2s ease !important;">
-          <!-- BANNER COM A TEMÁTICA E FOTO DO HEROI SELECIONADO -->
-          <div class="cat-banner-header" style="background: ${cat.bgGradient} !important; border-radius: 16px !important; padding: 16px !important; display: flex !important; align-items: center !important; justify-content: space-between !important; border: 2px solid ${activeMascot.neonColor || '#38BDF8'} !important; box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;">
+        <div class="category-card" data-id="${cat.id}" style="background: #0F172A !important; border: 2.5px solid ${cat.badgeColor || '#38BDF8'} !important; border-radius: 24px !important; padding: 24px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; gap: 16px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.6) !important; cursor: pointer !important; transition: all 0.2s ease !important;">
+          <!-- BANNER HEADER COM ÍCONE DIVERSIFICADO DE CADA MISSÃO -->
+          <div class="cat-banner-header" style="background: ${cat.bgGradient} !important; border-radius: 16px !important; padding: 18px !important; display: flex !important; align-items: center !important; justify-content: space-between !important; box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;">
             <div style="display: flex !important; align-items: center !important; gap: 14px !important;">
-              <img src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 60px !important; height: 60px !important; min-width: 60px !important; min-height: 60px !important; border-radius: 50% !important; object-fit: cover !important; border: 2.5px solid #34D399 !important; box-shadow: 0 0 18px rgba(52,211,153,0.6) !important; display: block !important;" />
+              <span class="cat-icon-badge" style="font-size: 2.8rem !important; background: rgba(0,0,0,0.35) !important; padding: 10px 16px !important; border-radius: 18px !important; border: 1.5px solid rgba(255,255,255,0.3) !important;">${cat.icon}</span>
               <div>
-                <span style="font-family: 'Orbitron', sans-serif !important; font-size: 0.8rem !important; color: #FDE047 !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important;">⚡ ${activeMascot.name}</span>
+                <span style="font-family: 'Orbitron', sans-serif !important; font-size: 0.8rem !important; color: #FDE047 !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important;">MISSÃO ORTOGRÁFICA</span>
                 <h4 style="font-family: 'Orbitron', sans-serif !important; font-size: 1.15rem !important; color: #FFFFFF !important; font-weight: 800 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.6) !important;">${cat.title.split('(')[0]}</h4>
               </div>
             </div>
@@ -1419,7 +1416,7 @@ class UIController {
           </div>
 
           <button class="btn btn-3d btn-primary btn-block play-cat-btn" style="background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%) !important; color: #FFFFFF !important; font-family: 'Orbitron', sans-serif !important; font-weight: 800 !important; font-size: 1.1rem !important; padding: 14px 20px !important; border-radius: 16px !important; border: none !important; cursor: pointer !important; box-shadow: 0 6px 0 #0369A1 !important; margin-top: 6px !important;">
-            ▶️ JOGAR COM ${activeMascot.name.toUpperCase()}
+            ▶️ JOGAR AGORA
           </button>
         </div>
       `;
@@ -1468,7 +1465,6 @@ class UIController {
       progressFill.style.width = `${percent}%`;
     }
 
-    // AVATAR DO MASCOTE DE 100PX EM JOGO COM BORDA DESTAQUE
     const mascotAvatar = document.querySelector('.game-mascot-avatar');
     if (mascotAvatar) {
       mascotAvatar.style.width = '100px';
@@ -1621,15 +1617,7 @@ class UIController {
 
     this.userMatrixAnswers = Array(matrixData.questions.length).fill('');
 
-    sentencesContainer.innerHTML = `
-      <div style="background: #020617; border: 2px solid ${activeMascot.neonColor || '#38BDF8'}; border-radius: 16px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px;">
-        <img src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />
-        <div>
-          <span style="color: #34D399; font-weight: 800; font-family: var(--font-heading); font-size: 0.85rem;">⚡ ${activeMascot.name} RECOMENDA:</span>
-          <p style="color: #FFF; font-weight: 700; margin: 0;">"Leia com atenção e encaixe a palavra correta em cada lacuna!"</p>
-        </div>
-      </div>
-    ` + matrixData.questions.map((q, idx) => {
+    sentencesContainer.innerHTML = matrixData.questions.map((q, idx) => {
       const { prefix, gapText, suffix } = this.getMaskedParts(q);
       return `
         <div class="matrix-sentence-box" data-index="${idx}" style="background: #020617 !important; border: 2px solid #38BDF8 !important; border-radius: 18px !important; padding: 20px 24px !important; margin-bottom: 16px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;">
@@ -2052,7 +2040,11 @@ class UIController {
     const adminModal = document.getElementById('admin-modal');
     if (!adminModal) return;
 
-    await this.renderAdminProfilesGrid();
+    try {
+      await this.renderAdminProfilesGrid();
+    } catch (e) {
+      console.warn('Erro ao renderizar painel admin:', e);
+    }
 
     const btnClose = document.getElementById('btn-close-admin-modal');
     if (btnClose) {
@@ -2082,41 +2074,43 @@ class UIController {
     const profiles = this.game.getProfiles();
     let dbLogsHtml = '';
 
-    try {
-      const res = await fetch('/api/admin/db-dump');
-      if (res.ok) {
-        const dbData = await res.json();
-        if (dbData && dbData.logs && dbData.logs.length > 0) {
-          dbLogsHtml = `
-            <div style="background: #020617; border: 1.5px solid #38BDF8; border-radius: 16px; padding: 16px; margin-top: 16px;">
-              <h4 style="color: #38BDF8; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 10px;">📊 Histórico Recente de Exercícios (SQLite DB):</h4>
-              <div style="max-height: 180px; overflow-y: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
-                  <thead>
-                    <tr style="color: #F59E0B; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                      <th style="padding: 6px;">Usuário</th>
-                      <th style="padding: 6px;">Questão / Frase</th>
-                      <th style="padding: 6px;">Resposta</th>
-                      <th style="padding: 6px;">Resultado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${dbData.logs.map(l => `
-                      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 6px; color: #FFF; font-weight: 700;">${l.profile_name || 'Anônimo'}</td>
-                        <td style="padding: 6px; color: #CBD5E1;">${l.question_text}</td>
-                        <td style="padding: 6px; color: #38BDF8; font-weight: 800;">${l.user_answer}</td>
-                        <td style="padding: 6px; color: ${l.is_correct ? '#34D399' : '#F87171'}; font-weight: 800;">${l.is_correct ? '✅ Acertou' : '❌ Errou'}</td>
+    if (window.location.protocol.startsWith('http')) {
+      try {
+        const res = await fetch('/api/admin/db-dump');
+        if (res.ok) {
+          const dbData = await res.json();
+          if (dbData && dbData.logs && dbData.logs.length > 0) {
+            dbLogsHtml = `
+              <div style="background: #020617; border: 1.5px solid #38BDF8; border-radius: 16px; padding: 16px; margin-top: 16px;">
+                <h4 style="color: #38BDF8; font-family: var(--font-heading); font-size: 1rem; margin-bottom: 10px;">📊 Histórico Recente de Exercícios (SQLite DB):</h4>
+                <div style="max-height: 180px; overflow-y: auto;">
+                  <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                    <thead>
+                      <tr style="color: #F59E0B; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <th style="padding: 6px;">Usuário</th>
+                        <th style="padding: 6px;">Questão / Frase</th>
+                        <th style="padding: 6px;">Resposta</th>
+                        <th style="padding: 6px;">Resultado</th>
                       </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      ${dbData.logs.map(l => `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                          <td style="padding: 6px; color: #FFF; font-weight: 700;">${l.profile_name || 'Anônimo'}</td>
+                          <td style="padding: 6px; color: #CBD5E1;">${l.question_text}</td>
+                          <td style="padding: 6px; color: #38BDF8; font-weight: 800;">${l.user_answer}</td>
+                          <td style="padding: 6px; color: ${l.is_correct ? '#34D399' : '#F87171'}; font-weight: 800;">${l.is_correct ? '✅ Acertou' : '❌ Errou'}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          }
         }
-      }
-    } catch (e) {}
+      } catch (e) {}
+    }
 
     if (profiles.length === 0) {
       container.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 20px;">Nenhum usuário cadastrado.</div>` + dbLogsHtml;
@@ -2510,7 +2504,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const ui = new UIController(game);
   window.gameEngineInstance = game;
 
-  // AUTO-PLAY DA MÚSICA BGM AO CLICAR EM QUALQUER LUGAR DA TELA
   const autoPlayMusic = () => {
     soundManager.initContext();
     soundManager.startBGM();
