@@ -261,7 +261,7 @@ export class UIController {
       // 2. Fragmento no INÍCIO da palavra (ex: "girafa" -> "g" + "irafa")
       if (wordLower.startsWith(optLower)) {
         const suffix = word.substring(correctOpt.length);
-        return { prefix: '', gapText: '[ ___ ]', suffix };
+        return { prefix: '', gapText: '[_]', suffix };
       }
 
       // 3. Fragmento no MEIO da palavra (ex: "casa" -> "ca" + "s" + "a" ou "campo" -> "ca" + "m" + "po")
@@ -269,12 +269,12 @@ export class UIController {
       if (matchIdx !== -1) {
         const prefix = word.substring(0, matchIdx);
         const suffix = word.substring(matchIdx + correctOpt.length);
-        return { prefix, gapText: '[ ___ ]', suffix };
+        return { prefix, gapText: '[_]', suffix };
       }
     }
 
     // Caso contrário (opções de palavras inteiras)
-    return { prefix: '', gapText: '[ _____ ]', suffix: '' };
+    return { prefix: '', gapText: '[_]', suffix: '' };
   }
 
   // Renderiza a pergunta na tela de jogo
@@ -300,47 +300,27 @@ export class UIController {
       catBadge.style.backgroundColor = category.color;
     }
 
-    // Card Container
-    const cardEl = questionScreen.querySelector('.game-card');
-    if (cardEl) {
-      cardEl.style.cssText = 'background: #0F172A !important; color: #FFFFFF !important; border: 3px solid #38BDF8 !important; border-radius: 28px !important; padding: 32px !important; box-shadow: 0 20px 60px rgba(0,0,0,0.9) !important;';
-    }
-
     // Mascote Reação
-    const mascotFeedback = questionScreen.querySelector('.mascot-feedback-area, .game-mascot-box');
-    if (mascotFeedback) {
-      mascotFeedback.style.cssText = 'background: #1E293B !important; border: 2.5px solid #38BDF8 !important; border-radius: 20px !important; padding: 16px 24px !important; display: flex !important; align-items: center !important; gap: 16px !important; margin-bottom: 24px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;';
-    }
-
     const mascotAvatar = questionScreen.querySelector('.game-mascot-avatar');
     if (mascotAvatar) {
       mascotAvatar.textContent = mascot.icon;
-      mascotAvatar.style.cssText = 'font-size: 2.5rem !important; flex-shrink: 0 !important;';
     }
 
     const mascotBubble = questionScreen.querySelector('.game-mascot-bubble');
     if (mascotBubble) {
       mascotBubble.textContent = mascot.quote;
-      mascotBubble.style.cssText = 'color: #FFFFFF !important; font-family: "Plus Jakarta Sans", sans-serif !important; font-weight: 800 !important; font-size: 1.15rem !important; text-shadow: 0 2px 4px rgba(0,0,0,0.9) !important;';
     }
 
-    // Extrai o radical e sufixo para exibir ex: "trar[ ___ ]"
+    // Extrai o radical e sufixo para exibir ex: "trar[_]"
     const maskedInfo = this.getMaskedParts(question);
 
-    // Container da Frase
-    const sentenceContainer = questionScreen.querySelector('.sentence-container');
-    if (sentenceContainer) {
-      sentenceContainer.style.cssText = 'background: #020617 !important; border: 3px solid #38BDF8 !important; border-radius: 24px !important; padding: 32px 24px !important; margin-bottom: 28px !important; text-align: center !important; box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;';
-    }
-
-    // Frase da Pergunta com o radical e a lacuna destacada
+    // Frase da Pergunta com a palavra alvo em destaque dourado (.target-word-highlight) e a lacuna compacta [_] (.gap-highlight)
     const sentenceEl = questionScreen.querySelector('.game-sentence');
     if (sentenceEl) {
-      const gapHTML = `<span style="display: inline-flex !important; align-items: center !important; font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; color: #FFFFFF !important; font-size: 1.65rem !important;">${maskedInfo.prefix}<span class="gap-placeholder" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important; color: #FFFFFF !important; font-family: 'Orbitron', sans-serif !important; font-weight: 900 !important; font-size: 1.35rem !important; padding: 6px 20px !important; border-radius: 16px !important; border: 2.5px solid #FBBF24 !important; box-shadow: 0 0 20px rgba(245, 158, 11, 0.7) !important; display: inline-block !important; letter-spacing: 2px !important; margin: 0 4px !important;">${maskedInfo.gapText}</span>${maskedInfo.suffix}</span>`;
+      const gapHTML = `<span class="target-word-highlight">${maskedInfo.prefix}<span class="gap-highlight">[_]</span>${maskedInfo.suffix}</span>`;
 
-      const highlightedSentence = question.sentence.replace(/_____|___/, gapHTML);
+      const highlightedSentence = question.sentence.replace(/_____|___|\[_\]|\[ ___ \]|\[ _____ \]/g, gapHTML);
       sentenceEl.innerHTML = highlightedSentence;
-      sentenceEl.style.cssText = 'color: #FFFFFF !important; font-family: "Plus Jakarta Sans", sans-serif !important; font-weight: 800 !important; font-size: 1.65rem !important; line-height: 1.8 !important; text-shadow: 0 2px 8px rgba(0,0,0,0.9) !important; margin-bottom: 20px !important;';
     }
 
     // Botão de Áudio (Ouvir Pronúncia da Palavra)
