@@ -35,7 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
   ui.updateHeaderStats();
   game.fetchDbProfiles().then(() => {
     ui.updateHeaderStats();
-    if (!game.hasActiveProfile()) {
+    const isSessionLoggedIn = sessionStorage.getItem('guardiao_active_session_login');
+    if (!isSessionLoggedIn || !game.hasActiveProfile()) {
       ui.openProfileModal({ mandatory: true });
     }
   });

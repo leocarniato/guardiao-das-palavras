@@ -56,15 +56,7 @@ def init_db():
     
     # Se o PIN Mestre não existir, define '1234'
     cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('master_pin', '1234')")
-    
-    # Se a tabela estiver vazia, cria o perfil inicial 'pedro'
-    cursor.execute("SELECT COUNT(*) as count FROM profiles")
-    if cursor.fetchone()['count'] == 0:
-        cursor.execute('''
-            INSERT INTO profiles (id, name, password_hash, coins, gems, xp, level, active_mascot, unlocked_mascots)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('pedro', 'Pedro', '', 20, 5, 0, 1, 'aranha', '["aranha"]'))
-        conn.commit()
+    conn.commit()
     conn.close()
 
 def hash_password(password):

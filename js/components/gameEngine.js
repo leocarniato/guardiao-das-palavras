@@ -115,7 +115,8 @@ export class GameEngine {
     this.questionsData = QUESTIONS_DATA;
 
     this.profilesData = this.loadProfilesData();
-    this.activeProfileId = this.profilesData.activeProfileId || null;
+    const isSessionLoggedIn = sessionStorage.getItem('guardiao_active_session_login');
+    this.activeProfileId = (isSessionLoggedIn && this.profilesData.activeProfileId) ? this.profilesData.activeProfileId : null;
     
     this.playerData = (this.activeProfileId && this.profilesData.profiles[this.activeProfileId])
       ? this.profilesData.profiles[this.activeProfileId]
@@ -193,53 +194,68 @@ export class GameEngine {
   }
 
   async fetchDbProfiles() {
+    let dbProfiles = null;
+
     try {
       const supaProfiles = await supabaseService.fetchProfiles();
       if (supaProfiles && Array.isArray(supaProfiles)) {
-        supaProfiles.forEach(p => {
-          this.profilesData.profiles[p.id] = {
-            id: p.id,
-            name: p.name,
-            passwordHash: p.password_hash,
-            passwordHint: p.password_hint,
-            coins: p.coins,
-            gems: p.gems,
-            xp: p.xp,
-            level: p.level,
-            activeMascot: p.active_mascot,
-            unlockedMascots: p.unlocked_mascots || ['aranha'],
-            profilePhoto: p.profile_photo,
-            photoGallery: p.photo_gallery || [],
-            stars: p.stars || {},
-            stats: p.stats || {}
-          };
-        });
-        this.savePlayerData();
-        return Object.values(this.profilesData.profiles);
+        dbProfiles = supaProfiles.map(p => ({
+          id: p.id,
+          name: p.name,
+          passwordHash: p.password_hash,
+          passwordHint: p.password_hint,
+          coins: p.coins,
+          gems: p.gems,
+          xp: p.xp,
+          level: p.level,
+          activeMascot: p.active_mascot,
+          unlockedMascots: p.unlocked_mascots || ['aranha'],
+          profilePhoto: p.profile_photo,
+          photoGallery: p.photo_gallery || [],
+          stars: p.stars || {},
+          stats: p.stats || {}
+        }));
       }
     } catch (e) {
-      console.log('Conexão Supabase:', e);
+      console.warn('Conexão Supabase:', e);
     }
 
-    try {
-      const res = await fetch('/api/profiles');
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.success && Array.isArray(data.profiles)) {
-          data.profiles.forEach(p => {
-            if (!this.profilesData.profiles[p.id]) {
-              this.profilesData.profiles[p.id] = {
-                ...this.createDefaultPlayerData(p.name),
-                ...p,
-                passwordHash: p.hasPassword ? 'DB_PROTECTED' : ''
-              };
-            }
-          });
-          this.savePlayerData();
-          return data.profiles;
+    if (!dbProfiles && window.location.protocol.startsWith('http')) {
+      try {
+        const res = await fetch('/api/profiles');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.profiles)) {
+            dbProfiles = data.profiles.map(p => ({
+              ...this.createDefaultPlayerData(p.name),
+              ...p,
+              passwordHash: p.hasPassword ? 'DB_PROTECTED' : ''
+            }));
+          }
         }
+      } catch (e) {}
+    }
+
+    if (dbProfiles) {
+      const freshMap = {};
+      dbProfiles.forEach(p => {
+        freshMap[p.id] = p;
+      });
+      this.profilesData.profiles = freshMap;
+
+      const isSessionLoggedIn = sessionStorage.getItem('guardiao_active_session_login');
+      if (isSessionLoggedIn && this.activeProfileId && freshMap[this.activeProfileId]) {
+        this.playerData = freshMap[this.activeProfileId];
+      } else {
+        this.activeProfileId = null;
+        this.playerData = null;
+        sessionStorage.removeItem('guardiao_active_session_login');
+        delete this.profilesData.activeProfileId;
       }
-    } catch (e) {}
+
+      this.savePlayerData();
+      return Object.values(freshMap);
+    }
 
     return this.getProfiles();
   }
@@ -446,6 +462,7 @@ export class GameEngine {
 
     this.activeProfileId = profileId;
     this.playerData = this.profilesData.profiles[profileId];
+    sessionStorage.setItem('guardiao_active_session_login', 'true');
     this.savePlayerData();
     return true;
   }
@@ -509,6 +526,7 @@ export class GameEngine {
     }
 
     try {
+      await supabaseService.deleteProfile(profileId);
       await fetch('/api/profiles/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -518,11 +536,13 @@ export class GameEngine {
 
     delete this.profilesData.profiles[profileId];
     if (this.activeProfileId === profileId) {
-      this.activeProfileId = Object.keys(this.profilesData.profiles)[0];
-      this.playerData = this.profilesData.profiles[this.activeProfileId];
+      this.activeProfileId = null;
+      this.playerData = null;
+      sessionStorage.removeItem('guardiao_active_session_login');
+      delete this.profilesData.activeProfileId;
     }
     this.savePlayerData();
-    return { success: true, message: 'Perfil excluído com sucesso!' };
+    return { success: true, message: 'Perfil excluído com sucesso do Banco de Dados!' };
   }
 
   saveProfilePhoto(photoBase64) {
