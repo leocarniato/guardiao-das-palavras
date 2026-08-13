@@ -61,15 +61,21 @@ export class UIController {
       document.documentElement.style.setProperty('--neon-glow', activeMascot.neonColor || '#10B981');
     }
 
-    // Exibe a Foto de Perfil da WebCam no Header se existir
+    // Exibe a Foto no Header: se houver foto personalizada de webcam/celular, exibe ela.
+    // Se NÃO houver foto personalizada, a foto no topo MUDA AUTOMATICAMENTE JUNTO COM O MASCOTE EQUIPADO!
     const userPhotoEl = document.getElementById('header-user-photo');
     if (userPhotoEl) {
-      if (playerData && playerData.profilePhoto) {
-        userPhotoEl.src = playerData.profilePhoto;
+      const displayPhoto = (playerData && playerData.customProfilePhoto) 
+        ? playerData.customProfilePhoto 
+        : (activeMascot ? activeMascot.img : null);
+
+      if (displayPhoto) {
+        userPhotoEl.src = displayPhoto;
         userPhotoEl.style.width = '42px';
         userPhotoEl.style.height = '42px';
         userPhotoEl.style.borderRadius = '50%';
         userPhotoEl.style.objectFit = 'cover';
+        userPhotoEl.style.border = '2px solid var(--neon-glow, #34D399)';
         userPhotoEl.style.display = 'inline-block';
       } else {
         userPhotoEl.style.display = 'none';

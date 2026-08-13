@@ -250,27 +250,33 @@
     </div>
   </div>
 
-  <!-- MODAL FOTO BOOTH COM WEBCAM USB (#photobooth-modal) -->
+  <!-- MODAL FOTO BOOTH COM WEBCAM USB E CÂMERA DO CELULAR (#photobooth-modal) -->
   <div id="photobooth-modal" class="modal-overlay">
     <div class="modal-card photobooth-card" style="max-width: 760px !important; width: 92vw !important; padding: 18px 24px !important; background: #0F172A !important;">
       <h3 class="photobooth-title" style="font-size: 1.6rem !important; margin-bottom: 2px !important; color: #38BDF8 !important;">📸 Estúdio de Foto do Campeão!</h3>
-      <p class="photobooth-desc" style="font-size: 0.9rem !important; margin-bottom: 12px !important; color: #94A3B8 !important;">Fique pronto na câmera para tirar uma foto épica ao lado do seu Mascote!</p>
+      <p class="photobooth-desc" style="font-size: 0.9rem !important; margin-bottom: 12px !important; color: #94A3B8 !important;">Tire uma foto épica ao lado do seu Mascote (compatível com Câmera do Celular ou WebCam)!</p>
+
+      <!-- Input de foto para smartphones e tablets -->
+      <input type="file" id="input-mobile-photo" accept="image/*" capture="user" style="display: none;" />
 
       <div class="photobooth-stage" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 14px !important; width: 100% !important; height: 200px !important; max-height: 200px !important; background: #020617 !important; padding: 10px !important; border-radius: 18px !important; overflow: hidden !important; margin-bottom: 16px !important;">
         <div class="photobooth-cam-box" style="flex: 1 1 50% !important; width: 50% !important; height: 180px !important; max-height: 180px !important; position: relative !important; overflow: hidden !important; border-radius: 14px !important; border: 2px solid rgba(255,255,255,0.2) !important;">
-          <video id="webcam-video" autoplay playsinline style="width: 100% !important; height: 180px !important; max-height: 180px !important; object-fit: cover !important; transform: scaleX(-1) !important; display: block !important;"></video>
+          <video id="webcam-video" autoplay playsinline muted style="width: 100% !important; height: 180px !important; max-height: 180px !important; object-fit: cover !important; transform: scaleX(-1) !important; display: block !important;"></video>
           <span class="cam-label" style="position: absolute !important; bottom: 6px !important; left: 50% !important; transform: translateX(-50%) !important; background: rgba(15,23,42,0.85) !important; padding: 3px 12px !important; border-radius: 20px !important; font-size: 0.8rem !important; color: #38BDF8 !important; border: 1px solid rgba(255,255,255,0.2) !important; white-space: nowrap !important; z-index: 5 !important;">👤 Você</span>
         </div>
-        <div class="photobooth-mascot-box" style="flex: 1 1 50% !important; width: 50% !important; height: 180px !important; max-height: 180px !important; position: relative !important; overflow: hidden !important; border-radius: 14px !important; border: 2px solid rgba(255,255,255,0.2) !important;">
-          <img id="photobooth-mascot-img" src="images/cyber_hero.jpg" alt="Mascote" style="width: 100% !important; height: 180px !important; max-height: 180px !important; object-fit: cover !important; object-position: center top !important; display: block !important;" />
+        <div class="photobooth-mascot-box" style="flex: 1 1 50% !important; width: 50% !important; height: 180px !important; max-height: 180px !important; position: relative !important; overflow: hidden !important; border-radius: 14px !important; border: 2px solid rgba(255,255,255,0.2) !important; background: #020617 !important;">
+          <img id="photobooth-mascot-img" src="images/cyber_hero.jpg" alt="Mascote" style="width: 100% !important; height: 180px !important; max-height: 180px !important; object-fit: contain !important; object-position: center !important; display: block !important;" />
           <span id="photobooth-mascot-name" class="mascot-label" style="position: absolute !important; bottom: 6px !important; left: 50% !important; transform: translateX(-50%) !important; background: rgba(15,23,42,0.85) !important; padding: 3px 12px !important; border-radius: 20px !important; font-size: 0.8rem !important; color: #34D399 !important; border: 1px solid rgba(255,255,255,0.2) !important; white-space: nowrap !important; z-index: 5 !important;">🕷️ Cyber Aranha Hero</span>
         </div>
         <div id="photobooth-countdown" class="photobooth-countdown" style="position: absolute !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; font-size: 4.5rem !important; font-weight: 800 !important; color: #F59E0B !important; z-index: 10 !important;">3</div>
       </div>
 
-      <div class="photobooth-actions" style="display: flex !important; gap: 14px !important; justify-content: center !important;">
-        <button id="btn-snap-photo" class="btn btn-3d btn-primary btn-large">
-          📸 Tirar Foto (3s)
+      <div class="photobooth-actions" style="display: flex !important; flex-wrap: wrap !important; gap: 10px !important; justify-content: center !important;">
+        <button id="btn-snap-photo" class="btn btn-3d btn-primary">
+          📸 Câmera Web (3s)
+        </button>
+        <button id="btn-upload-photo" class="btn btn-3d btn-success">
+          📱 Tirar Foto no Celular / Enviar
         </button>
         <button id="btn-download-last-photo" class="btn btn-3d btn-warning">
           💾 Baixar Foto (PNG)

@@ -471,6 +471,8 @@ export class GameEngine {
   }
 
   saveProfilePhoto(photoBase64) {
+    if (!this.playerData) return;
+    this.playerData.customProfilePhoto = photoBase64;
     this.playerData.profilePhoto = photoBase64;
     
     if (!this.playerData.photoGallery) {
@@ -492,13 +494,22 @@ export class GameEngine {
     this.savePlayerData();
   }
 
+  resetProfilePhotoToMascot() {
+    if (!this.playerData) return;
+    this.playerData.customProfilePhoto = null;
+    this.playerData.profilePhoto = null;
+    this.savePlayerData();
+  }
+
   getPhotoGallery() {
-    return this.playerData.photoGallery || [];
+    return (this.playerData && this.playerData.photoGallery) ? this.playerData.photoGallery : [];
   }
 
   setPhotoAsAvatar(photoId) {
+    if (!this.playerData) return false;
     const photo = (this.playerData.photoGallery || []).find(p => p.id === photoId);
     if (photo) {
+      this.playerData.customProfilePhoto = photo.dataUrl;
       this.playerData.profilePhoto = photo.dataUrl;
       this.savePlayerData();
       return true;

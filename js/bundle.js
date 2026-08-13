@@ -1,6 +1,7 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Garante que o jogo e o Estúdio de Fotos com WebCam funcionem perfeitamente.
+ * Suporte completo a Celular/Smartphones, WebCam, Mascotes no Quadrado Perfeito (object-fit: contain)
+ * e Troca Automática da Foto de Perfil ao Mudar de Mascote/Tema.
  */
 
 // 1. DADOS DE PERGUNTAS E CATEGORIAS
@@ -652,6 +653,7 @@ class GameEngine {
       activeMascot: 'aranha',
       unlockedMascots: ['aranha'],
       profilePhoto: null,
+      customProfilePhoto: null,
       photoGallery: [],
       stars: {},
       stats: {
@@ -848,24 +850,32 @@ class GameEngine {
 
   saveProfilePhoto(photoBase64) {
     if (!this.playerData) return;
+    this.playerData.customProfilePhoto = photoBase64;
     this.playerData.profilePhoto = photoBase64;
     
     if (!this.playerData.photoGallery) {
       this.playerData.photoGallery = [];
     }
 
-    const mascot = this.getActiveMascot();
+    const activeMascotObj = this.getActiveMascot();
     this.playerData.photoGallery.unshift({
       id: 'photo_' + Date.now(),
       dataUrl: photoBase64,
       date: new Date().toLocaleDateString('pt-BR'),
-      mascotName: mascot.name
+      mascotName: activeMascotObj.name || 'Mascote'
     });
 
     if (this.playerData.photoGallery.length > 12) {
       this.playerData.photoGallery = this.playerData.photoGallery.slice(0, 12);
     }
 
+    this.savePlayerData();
+  }
+
+  resetProfilePhotoToMascot() {
+    if (!this.playerData) return;
+    this.playerData.customProfilePhoto = null;
+    this.playerData.profilePhoto = null;
     this.savePlayerData();
   }
 
@@ -877,6 +887,7 @@ class GameEngine {
     if (!this.playerData) return false;
     const photo = (this.playerData.photoGallery || []).find(p => p.id === photoId);
     if (photo) {
+      this.playerData.customProfilePhoto = photo.dataUrl;
       this.playerData.profilePhoto = photo.dataUrl;
       this.savePlayerData();
       return true;
@@ -1171,8 +1182,7 @@ class UIController {
       name: 'Criar Perfil / Login',
       coins: 0,
       gems: 0,
-      level: 1,
-      profilePhoto: null
+      level: 1
     };
 
     if (activeMascot && activeMascot.bgGradient) {
@@ -1180,15 +1190,21 @@ class UIController {
       document.documentElement.style.setProperty('--neon-glow', activeMascot.neonColor || '#10B981');
     }
 
+    // Se o jogador tiver tirado uma foto própria personalizada (customProfilePhoto), usa a foto dele.
+    // Se NÃO tiver foto de webcam/celular personalizada, A FOTO DO PERFIL MUDA AUTOMATICAMENTE JUNTO COM O MASCOTE EQUIPADO!
     const userPhotoEl = document.getElementById('header-user-photo');
     if (userPhotoEl) {
-      if (playerData && playerData.profilePhoto) {
-        userPhotoEl.src = playerData.profilePhoto;
+      const displayPhoto = (playerData && playerData.customProfilePhoto) 
+        ? playerData.customProfilePhoto 
+        : (activeMascot ? activeMascot.img : null);
+
+      if (displayPhoto) {
+        userPhotoEl.src = displayPhoto;
         userPhotoEl.style.width = '42px';
         userPhotoEl.style.height = '42px';
         userPhotoEl.style.borderRadius = '50%';
         userPhotoEl.style.objectFit = 'cover';
-        userPhotoEl.style.border = '2px solid #34D399';
+        userPhotoEl.style.border = '2px solid var(--neon-glow, #34D399)';
         userPhotoEl.style.display = 'inline-block';
       } else {
         userPhotoEl.style.display = 'none';
@@ -1565,6 +1581,7 @@ class UIController {
     }
   }
 
+  // Renderização dos Mascotes Enquadrados perfeitamente no Quadrado (object-fit: contain)
   renderShop(containerEl) {
     if (!containerEl) return;
     const mascots = this.game.getMascots();
@@ -1572,28 +1589,33 @@ class UIController {
     containerEl.style.cssText = 'display: grid !important; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important; gap: 20px !important; padding-bottom: 40px !important;';
 
     containerEl.innerHTML = mascots.map(m => `
-      <div class="shop-card ${m.active ? 'equipped' : ''}" style="background: #0F172A !important; border: 2.5px solid ${m.active ? '#10B981' : '#38BDF8'} !important; border-radius: 24px !important; padding: 20px !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 12px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;">
-        <img src="${m.img}" alt="${m.name}" style="width: 120px !important; height: 120px !important; border-radius: 50% !important; object-fit: cover !important; border: 3px solid ${m.neonColor || '#38BDF8'} !important; box-shadow: 0 0 20px ${m.neonColor || '#38BDF8'} !important;" />
-        <h4 style="font-family: 'Orbitron', sans-serif !important; color: #FFF !important; font-size: 1.1rem !important; font-weight: 800 !important;">${m.icon} ${m.name}</h4>
-        <p style="color: #94A3B8 !important; font-size: 0.9rem !important; line-height: 1.4 !important; flex: 1 !important;">${m.description}</p>
+      <div class="shop-card ${m.active ? 'equipped' : ''}" style="background: #0F172A !important; border: 2.5px solid ${m.active ? '#10B981' : '#38BDF8'} !important; border-radius: 24px !important; padding: 20px !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 14px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;">
+        <!-- Caixa Quadrada com gradiente do tema e imagem que ENCAIXA 100% no quadrado (object-fit: contain) -->
+        <div class="shop-mascot-img-container" style="width: 100% !important; height: 220px !important; max-height: 220px !important; background: ${m.bgGradient || '#020617'} !important; border-radius: 18px !important; overflow: hidden !important; position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 2px solid ${m.neonColor || '#38BDF8'} !important; box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important; padding: 8px !important;">
+          <img class="shop-mascot-real-img" src="${m.img}" alt="${m.name}" style="width: 100% !important; height: 100% !important; object-fit: contain !important; object-position: center !important; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.7)) !important;" />
+          <span style="position: absolute !important; top: 10px !important; right: 10px !important; background: rgba(15,23,42,0.85) !important; padding: 4px 10px !important; border-radius: 12px !important; font-size: 1.4rem !important; border: 1px solid rgba(255,255,255,0.2) !important;">${m.icon}</span>
+        </div>
+
+        <h4 style="font-family: 'Orbitron', sans-serif !important; color: #FFF !important; font-size: 1.1rem !important; font-weight: 800 !important; margin: 4px 0 0 0 !important;">${m.name}</h4>
+        <p style="color: #94A3B8 !important; font-size: 0.9rem !important; line-height: 1.4 !important; flex: 1 !important; margin: 0 !important;">${m.description}</p>
         
         <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
           ${m.active ? `
-            <button class="btn btn-3d btn-success btn-block" disabled style="opacity: 0.8 !important;">
-              ✅ EQUIPADO
+            <button class="btn btn-3d btn-success btn-block" disabled style="opacity: 0.9 !important; font-weight: 800 !important;">
+              ✅ MASCOTE EQUIPADO
             </button>
           ` : m.unlocked ? `
-            <button class="btn btn-3d btn-primary btn-block select-mascot-btn" data-id="${m.id}">
-              ⚡ EQUIPAR MASCOTE
+            <button class="btn btn-3d btn-primary btn-block select-mascot-btn" data-id="${m.id}" style="font-weight: 800 !important;">
+              ⚡ EQUIPAR TEMA E FOTO
             </button>
           ` : `
-            <button class="btn btn-3d btn-warning btn-block buy-mascot-btn" data-id="${m.id}">
-              🛒 COMPRAR (${m.price} 🪙)
+            <button class="btn btn-3d btn-warning btn-block buy-mascot-btn" data-id="${m.id}" style="font-weight: 800 !important;">
+              🪙 DESBLOQUEAR POR ${m.price} MOEDAS
             </button>
           `}
           ${m.unlocked ? `
-            <button class="btn btn-3d btn-info btn-block photo-mascot-btn" data-id="${m.id}">
-              📸 TIRAR FOTO COM MASCOTE
+            <button class="btn btn-3d btn-info btn-block photo-mascot-btn" data-id="${m.id}" style="font-weight: 800 !important;">
+              📸 TIRAR FOTO DE PERFIL
             </button>
           ` : ''}
         </div>
@@ -1640,7 +1662,7 @@ class UIController {
     });
   }
 
-  // Estúdio de Foto com WebCam USB
+  // Estúdio de Foto com Suporte a WebCam USB e Câmera do Celular / Smartphones
   openPhotoBooth(mascot) {
     const modal = document.getElementById('photobooth-modal');
     if (!modal) return;
@@ -1656,18 +1678,46 @@ class UIController {
     if (mascotNameEl) mascotNameEl.textContent = mascot.name || '';
     if (countdownEl) countdownEl.style.display = 'none';
 
+    // Suporte Avançado a Câmeras (Desktop WebCam e Celulares Frontal/Traseira)
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
-        .then(stream => {
-          this.webcamStream = stream;
-          if (videoEl) videoEl.srcObject = stream;
-        })
-        .catch(err => {
-          console.warn('Erro ao acessar webcam USB:', err);
-          alert('Não foi possível conectar com a câmera USB. Verifique se ela está conectada e se você deu permissão no navegador!');
-        });
-    } else {
-      alert('Seu navegador não suporta acesso à câmera.');
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+      })
+      .then(stream => {
+        this.webcamStream = stream;
+        if (videoEl) videoEl.srcObject = stream;
+      })
+      .catch(err => {
+        console.warn('Câmera em tempo real indisponível:', err);
+      });
+    }
+
+    // Configuração para Celulares / Upload de Foto Nativo do Aparelho
+    const inputMobile = document.getElementById('input-mobile-photo');
+    const btnUpload = document.getElementById('btn-upload-photo');
+
+    if (btnUpload && inputMobile) {
+      btnUpload.onclick = () => {
+        inputMobile.value = '';
+        inputMobile.click();
+      };
+
+      inputMobile.onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const userImg = new Image();
+          userImg.onload = () => {
+            this.processMobilePhotoCanvas(userImg, mascot, () => {
+              this.closePhotoBooth();
+            });
+          };
+          userImg.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      };
     }
 
     if (btnSnap) {
@@ -1704,8 +1754,8 @@ class UIController {
       btnDownload.onclick = () => {
         if (this.lastCapturedPhoto) {
           this.downloadDataUrl(this.lastCapturedPhoto, `foto_mascote_${mascot.id}.png`);
-        } else if (this.game.playerData && this.game.playerData.profilePhoto) {
-          this.downloadDataUrl(this.game.playerData.profilePhoto, `foto_perfil_${this.game.playerData.name}.png`);
+        } else if (this.game.playerData && (this.game.playerData.customProfilePhoto || this.game.playerData.profilePhoto)) {
+          this.downloadDataUrl(this.game.playerData.customProfilePhoto || this.game.playerData.profilePhoto, `foto_perfil_${this.game.playerData.name}.png`);
         } else {
           alert('Tire uma foto primeiro para poder baixar!');
         }
@@ -1717,6 +1767,60 @@ class UIController {
     }
 
     modal.classList.add('active');
+  }
+
+  processMobilePhotoCanvas(userImg, mascot, onDone) {
+    const canvas = document.getElementById('photobooth-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = 640;
+    canvas.height = 360;
+
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Metade Esquerda: Foto enviada do Celular
+    ctx.save();
+    ctx.drawImage(userImg, 0, 0, 320, 320);
+    ctx.restore();
+
+    // Linha Neon
+    ctx.fillStyle = mascot.neonColor || '#38BDF8';
+    ctx.fillRect(318, 0, 4, 320);
+
+    // Metade Direita: Mascote
+    const mascotImg = new Image();
+    mascotImg.crossOrigin = 'anonymous';
+    mascotImg.src = mascot.img;
+
+    mascotImg.onload = () => {
+      ctx.drawImage(mascotImg, 320, 0, 320, 320);
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      ctx.fillRect(0, 320, 640, 40);
+
+      ctx.fillStyle = mascot.neonColor || '#38BDF8';
+      ctx.font = 'bold 16px Nunito, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`⚡ ${mascot.name} & Guardião da Ortografia!`, 320, 346);
+
+      const photoBase64 = canvas.toDataURL('image/png');
+      this.lastCapturedPhoto = photoBase64;
+      this.game.saveProfilePhoto(photoBase64);
+      this.updateHeaderStats();
+      soundManager.playFanfare();
+      this.triggerConfetti(60);
+      alert('🎉 Foto enviada com sucesso para o perfil!');
+      if (onDone) onDone();
+    };
+
+    mascotImg.onerror = () => {
+      const photoBase64 = canvas.toDataURL('image/png');
+      this.game.saveProfilePhoto(photoBase64);
+      this.updateHeaderStats();
+      if (onDone) onDone();
+    };
   }
 
   closePhotoBooth() {
@@ -1865,13 +1969,15 @@ class UIController {
 
     const profiles = this.game.getProfiles();
     const activeId = this.game.activeProfileId;
+    const activeMascot = this.game.getActiveMascot();
 
     container.innerHTML = profiles.map(p => {
       const isActive = p.id === activeId;
-      const mascot = (this.game.getMascots().find(m => m.id === (p.activeMascot || 'aranha'))) || {};
+      const mascot = (this.game.getMascots().find(m => m.id === (p.activeMascot || 'aranha'))) || activeMascot || {};
       
-      const photoHtml = p.profilePhoto 
-        ? `<img class="profile-card-photo" src="${p.profilePhoto}" alt="${p.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />`
+      const photoSrc = p.customProfilePhoto || p.profilePhoto || mascot.img;
+      const photoHtml = photoSrc 
+        ? `<img class="profile-card-photo" src="${photoSrc}" alt="${p.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />`
         : `<div class="profile-card-avatar-badge" style="font-size: 2rem;">${mascot.icon || '👤'}</div>`;
 
       return `
@@ -1955,10 +2061,18 @@ class UIController {
 
     const photos = this.game.getPhotoGallery();
     if (container) {
+      let resetBtnHtml = `
+        <div style="margin-bottom: 16px; text-align: center;">
+          <button id="btn-sync-mascot-photo" class="btn btn-3d btn-success" style="width: 100%;">
+            🔄 Usar Foto do Mascote Equipado (Mudar foto com o tema)
+          </button>
+        </div>
+      `;
+
       if (photos.length === 0) {
-        container.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 24px;">Nenhuma foto salva ainda. Tire uma foto no estúdio com webcam!</div>`;
+        container.innerHTML = resetBtnHtml + `<div style="color: #94A3B8; text-align: center; padding: 24px;">Nenhuma foto capturada ainda. Tire fotos no estúdio com a câmera ou celular!</div>`;
       } else {
-        container.innerHTML = photos.map(p => `
+        container.innerHTML = resetBtnHtml + photos.map(p => `
           <div class="gallery-photo-card" style="background: #020617; border: 2px solid #38BDF8; border-radius: 16px; padding: 10px; margin-bottom: 12px;">
             <img src="${p.dataUrl}" alt="Foto" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px;" />
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
@@ -1978,6 +2092,16 @@ class UIController {
             }
           };
         });
+      }
+
+      const btnSyncMascot = document.getElementById('btn-sync-mascot-photo');
+      if (btnSyncMascot) {
+        btnSyncMascot.onclick = () => {
+          this.game.resetProfilePhotoToMascot();
+          this.updateHeaderStats();
+          modal.classList.remove('active');
+          alert('🔄 Foto sincronizada com o mascote equipado! A foto do topo agora mudará automaticamente ao trocar de mascote.');
+        };
       }
     }
 
