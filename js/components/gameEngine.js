@@ -4,7 +4,7 @@
  */
 
 import { CATEGORIES, QUESTIONS_DATA } from '../data/questionsData.js';
-import { cloudDb } from '../services/cloudDb.js';
+import { supabaseService } from '../services/supabaseClient.js';
 
 export const MASCOTS = [
   {
@@ -117,27 +117,9 @@ export class GameEngine {
     this.profilesData = this.loadProfilesData();
     this.activeProfileId = this.profilesData.activeProfileId || null;
     
-    this.playerData = (this.activeProfileId && this.profilesData.profiles && this.profilesData.profiles[this.activeProfileId])
+    this.playerData = (this.activeProfileId && this.profilesData.profiles[this.activeProfileId])
       ? this.profilesData.profiles[this.activeProfileId]
       : null;
-
-    // Se ainda não existir perfil ativo, pega o primeiro perfil disponível ou cria o perfil inicial 'Pedro'
-    if (!this.playerData) {
-      const existingProfiles = Object.values(this.profilesData.profiles || {});
-      if (existingProfiles.length > 0) {
-        this.activeProfileId = existingProfiles[0].id;
-        this.playerData = existingProfiles[0];
-        this.profilesData.activeProfileId = this.activeProfileId;
-      } else {
-        const defaultProfile = this.createDefaultPlayerData('Pedro');
-        defaultProfile.id = 'pedro';
-        if (!this.profilesData.profiles) this.profilesData.profiles = {};
-        this.profilesData.profiles['pedro'] = defaultProfile;
-        this.activeProfileId = 'pedro';
-        this.playerData = defaultProfile;
-        this.savePlayerData();
-      }
-    }
 
     // Estado da partida atual
     this.currentCategory = null;
@@ -212,16 +194,31 @@ export class GameEngine {
 
   async fetchDbProfiles() {
     try {
-      const cloudProfiles = await cloudDb.fetchProfiles();
-      if (cloudProfiles && typeof cloudProfiles === 'object') {
-        Object.keys(cloudProfiles).forEach(id => {
-          this.profilesData.profiles[id] = cloudProfiles[id];
+      const supaProfiles = await supabaseService.fetchProfiles();
+      if (supaProfiles && Array.isArray(supaProfiles)) {
+        supaProfiles.forEach(p => {
+          this.profilesData.profiles[p.id] = {
+            id: p.id,
+            name: p.name,
+            passwordHash: p.password_hash,
+            passwordHint: p.password_hint,
+            coins: p.coins,
+            gems: p.gems,
+            xp: p.xp,
+            level: p.level,
+            activeMascot: p.active_mascot,
+            unlockedMascots: p.unlocked_mascots || ['aranha'],
+            profilePhoto: p.profile_photo,
+            photoGallery: p.photo_gallery || [],
+            stars: p.stars || {},
+            stats: p.stats || {}
+          };
         });
         this.savePlayerData();
         return Object.values(this.profilesData.profiles);
       }
     } catch (e) {
-      console.log('Conexão Cloud:', e);
+      console.log('Conexão Supabase:', e);
     }
 
     try {
@@ -259,13 +256,8 @@ export class GameEngine {
 
       localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profilesData));
 
-      // Sincronização em Nuvem Multi-Dispositivo (PC + Celular)
-      if (Object.keys(this.profilesData.profiles).length > 0) {
-        cloudDb.saveProfiles(this.profilesData.profiles).catch(() => {});
-      }
-
-      // Sincronização secundária com backend Python se disponível
       if (this.playerData) {
+        supabaseService.saveProfile(this.playerData).catch(() => {});
         fetch('/api/profiles/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
