@@ -1,10 +1,10 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Ícones Temáticos Exclusivos para Cada Missão, Mascote Gigante no Menu (260px),
- * Painel ADM 100% Funcional (com ou sem backend) e BGM Automático.
+ * Lacunas Exatas dentro da Própria Palavra para todos os Exercícios,
+ * Mascote Gigante no Menu (260px), Painel ADM 100% Funcional e BGM Automático.
  */
 
-// 1. DADOS DE PERGUNTAS E CATEGORIAS COM ÍCONES E GRADIENTES DIVERSIFICADOS
+// 1. DADOS DE PERGUNTAS E CATEGORIAS COM FRASES E LACUNAS DENTRO DA PALAVRA
 const CATEGORIES = [
   {
     id: 'ao_am',
@@ -73,88 +73,88 @@ const CATEGORIES = [
 
 const QUESTIONS_DATA = {
   ao_am: [
-    { sentence: 'Amanhã os alunos [ ___ ] para o acampamento escolar.', word: 'viajarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Viajarão (com ÃO) indica uma ação que acontecerá no FUTURO (amanhã).' },
-    { sentence: 'Ontem à tarde os meninos [ ___ ] futebol no parque.', word: 'jogaram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Jogaram (com AM) indica uma ação que já aconteceu no PASSADO (ontem).' },
-    { sentence: 'No próximo sábado elas [ ___ ] no coral da escola.', word: 'cantarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Como a frase fala do "próximo sábado", usaremos o futuro: cantarão (ÃO).' },
-    { sentence: 'Na semana passada os atletas [ ___ ] na maratona.', word: 'correram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Semana passada já aconteceu (passado), por isso usamos correram (AM).' },
-    { sentence: 'Ano que vem os estudantes [ ___ ] para o exame final.', word: 'estudarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Ano que vem é futuro: estudarão (ÃO).' },
-    { sentence: 'Ontem à noite todas as crianças [ ___ ] ao filme.', word: 'assistiram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Ontem à noite é passado: assistiram (AM).' },
-    { sentence: 'No futuro os robôs [ ___ ] os cientistas nas tarefas.', word: 'ajudarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'No futuro é uma ação que vai acontecer: ajudarão (ÃO).' },
-    { sentence: 'Ontem os cães do vizinho [ ___ ] a noite inteira.', word: 'latiram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Ontem é passado: latiram (AM).' },
-    { sentence: 'Amanhã à tarde os cozinheiros [ ___ ] o bolo.', word: 'prepararão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Amanhã é futuro: prepararão (ÃO).' },
-    { sentence: 'Mês passado eles [ ___ ] um novo livro de aventura.', word: 'escreveram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Mês passado é passado: escreveram (AM).' }
+    { sentence: 'Amanhã os alunos viajar[ ___ ] para o acampamento escolar.', word: 'viajarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Viajarão (com ÃO) indica uma ação que acontecerá no FUTURO (amanhã).' },
+    { sentence: 'Ontem à tarde os meninos jogar[ ___ ] futebol no parque.', word: 'jogaram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Jogaram (com AM) indica uma ação que já aconteceu no PASSADO (ontem).' },
+    { sentence: 'No próximo sábado elas cantar[ ___ ] no coral da escola.', word: 'cantarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Como a frase fala do "próximo sábado", usaremos o futuro: cantarão (ÃO).' },
+    { sentence: 'Na semana passada os atletas correr[ ___ ] na maratona.', word: 'correram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Semana passada já aconteceu (passado), por isso usamos correram (AM).' },
+    { sentence: 'Ano que vem os estudantes estudar[ ___ ] para o exame final.', word: 'estudarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Ano que vem é futuro: estudarão (ÃO).' },
+    { sentence: 'Ontem à noite todas as crianças assistir[ ___ ] ao filme.', word: 'assistiram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Ontem à noite é passado: assistiram (AM).' },
+    { sentence: 'No futuro os robôs meçar[ ___ ] as tarefas da casa.', word: 'ajudarão', options: ['ÃO', 'AM'], correct: 0, explanation: 'No futuro é uma ação que vai acontecer: ajudarão (ÃO).' },
+    { sentence: 'Ontem os cães do vizinho latir[ ___ ] a noite inteira.', word: 'latiram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Ontem é passado: latiram (AM).' },
+    { sentence: 'Amanhã à tarde os cozinheiros preparar[ ___ ] o bolo.', word: 'prepararão', options: ['ÃO', 'AM'], correct: 0, explanation: 'Amanhã é futuro: prepararão (ÃO).' },
+    { sentence: 'Mês passado eles escrever[ ___ ] um novo livro de aventura.', word: 'escreveram', options: ['AM', 'ÃO'], correct: 0, explanation: 'Mês passado é passado: escreveram (AM).' }
   ],
   som_z: [
-    { sentence: 'A [ ___ ] da sala de jantar é feita de madeira nobre.', word: 'mesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'A palavra MESA é escrita com S, mas tem som de Z por estar entre duas vogais.' },
-    { sentence: 'A florista admirou a [ ___ ] da rosa no jardim.', word: 'beleza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'A palavra BELEZA é escrita com Z!' },
-    { sentence: 'O professor deu um ótimo [ ___ ] para a turma.', word: 'exemplo', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXEMPLO é escrito com X, mas a letra X tem som de Z nesta palavra!' },
-    { sentence: 'A [ ___ ] da vovó fica perto da montanha.', word: 'casa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'CASA é escrita com S (com som de Z entre vogais).' },
-    { sentence: 'O céu limpo de verão estava muito [ ___ ].', word: 'azul', options: ['Z', 'S', 'X'], correct: 0, explanation: 'AZUL é escrita com Z.' },
-    { sentence: 'O jovem estudante fez um [ ___ ] de matemática.', word: 'exame', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXAME é escrito com X (com som de Z).' },
-    { sentence: 'A linda [ ___ ] vivia num castelo distante.', word: 'princesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'PRINCESA é escrita com S.' },
-    { sentence: 'Devemos respeitar e cuidar da [ ___ ].', word: 'natureza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'NATUREZA é escrita com Z.' },
-    { sentence: 'O [ ___ ] defendeu o país com coragem.', word: 'exército', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXÉRCITO é escrito com X com som de Z.' },
-    { sentence: 'Coloquei uma [ ___ ] cheirosa no vaso de vidro.', word: 'rosa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'ROSA é escrita com S.' }
+    { sentence: 'A me[ ___ ]a da sala de jantar é feita de madeira nobre.', word: 'mesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'A palavra MESA é escrita com S, mas tem som de Z por estar entre duas vogais.' },
+    { sentence: 'A florista admirou a bele[ ___ ]a da rosa no jardim.', word: 'beleza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'A palavra BELEZA é escrita com Z!' },
+    { sentence: 'O professor deu um ótimo e[ ___ ]emplo para a turma.', word: 'exemplo', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXEMPLO é escrito com X, mas a letra X tem som de Z nesta palavra!' },
+    { sentence: 'A ca[ ___ ]a da vovó fica perto da montanha.', word: 'casa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'CASA é escrita com S (com som de Z entre vogais).' },
+    { sentence: 'O céu limpo de verão estava muito a[ ___ ]ul.', word: 'azul', options: ['Z', 'S', 'X'], correct: 0, explanation: 'AZUL é escrita com Z.' },
+    { sentence: 'O jovem estudante fez um e[ ___ ]ame de matemática.', word: 'exame', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXAME é escrito com X (com som de Z).' },
+    { sentence: 'A linda prince[ ___ ]a vivia num castelo distante.', word: 'princesa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'PRINCESA é escrita com S.' },
+    { sentence: 'Devemos respeitar e cuidar da nature[ ___ ]a.', word: 'natureza', options: ['Z', 'S', 'X'], correct: 0, explanation: 'NATUREZA é escrita com Z.' },
+    { sentence: 'O e[ ___ ]ército defendeu o país com coragem.', word: 'exército', options: ['X', 'Z', 'S'], correct: 0, explanation: 'EXÉRCITO é escrito com X com som de Z.' },
+    { sentence: 'Coloquei uma ro[ ___ ]a cheirosa no vaso de vidro.', word: 'rosa', options: ['S', 'Z', 'X'], correct: 0, explanation: 'ROSA é escrita com S.' }
   ],
   m_pb: [
-    { sentence: 'Os atletas correm pelo [ ___ ] de futebol.', word: 'campo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra P (caMpo).' },
-    { sentence: 'O músico tocou o [ ___ ] com muita energia.', word: 'tambor', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra B (taMbor).' },
-    { sentence: 'O pássaro entoou um lindo [ ___ ] no galho.', word: 'canto', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T (não é P nem B).' },
-    { sentence: 'A multidão dançou ao som do [ ___ ] brasileiro.', word: 'samba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra B (saMba).' },
-    { sentence: 'Acenda a [ ___ ] para iluminar o quarto.', word: 'lâmpada', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (lâMpada).' },
-    { sentence: 'Atravessamos a [ ___ ] sobre o rio agitado.', word: 'ponte', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
-    { sentence: 'Os bombeiros desativaram a [ ___ ] em segurança.', word: 'bomba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (boMba).' },
-    { sentence: 'Liguei o [ ___ ] para fazer a lição de casa.', word: 'computador', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (coMputador).' },
-    { sentence: 'Fui ao dentista cuidar do meu [ ___ ].', word: 'dente', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
-    { sentence: 'O bebê tem um pequeno sinal perto do [ ___ ].', word: 'umbigo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (uMbigo).' }
+    { sentence: 'Os atletas correm pelo ca[ ___ ]po de futebol.', word: 'campo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra P (caMpo).' },
+    { sentence: 'O músico tocou o ta[ ___ ]bor com muita energia.', word: 'tambor', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra B (taMbor).' },
+    { sentence: 'O pássaro entoou um lindo ca[ ___ ]to no galho.', word: 'canto', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T (não é P nem B).' },
+    { sentence: 'A multidão dançou ao som do sa[ ___ ]ba brasileiro.', word: 'samba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes da letra B (saMba).' },
+    { sentence: 'Acenda a lâ[ ___ ]pada para iluminar o quarto.', word: 'lâmpada', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (lâMpada).' },
+    { sentence: 'Atravessamos a po[ ___ ]te sobre o rio agitado.', word: 'ponte', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
+    { sentence: 'Os bombeiros desativaram a bo[ ___ ]ba em segurança.', word: 'bomba', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (boMba).' },
+    { sentence: 'Liguei o co[ ___ ]putador para fazer a lição de casa.', word: 'computador', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de P (coMputador).' },
+    { sentence: 'Fui ao dentista cuidar do meu de[ ___ ]te.', word: 'dente', options: ['N', 'M'], correct: 0, explanation: 'Usamos N pois a letra seguinte é T.' },
+    { sentence: 'O bebê tem um pequeno sinal perto do u[ ___ ]bigo.', word: 'umbigo', options: ['M', 'N'], correct: 0, explanation: 'Usamos M antes de B (uMbigo).' }
   ],
   ch_x: [
-    { sentence: 'A forte [ ___ ] molhou todas as calçadas.', word: 'chuva', options: ['CH', 'X'], correct: 0, explanation: 'CHUVA se escreve com CH!' },
-    { sentence: 'Vovó serviu chá quente em uma [ ___ ] azul.', word: 'xícara', options: ['X', 'CH'], correct: 0, explanation: 'XÍCARA se escreve com X!' },
-    { sentence: 'Guardei meus brinquedos dentro da [ ___ ].', word: 'caixa', options: ['X', 'CH'], correct: 0, explanation: 'CAIXA se escreve com X!' },
-    { sentence: 'Usei a [ ___ ] dourada para abrir o portão.', word: 'chave', options: ['CH', 'X'], correct: 0, explanation: 'CHAVE se escreve com CH!' },
-    { sentence: 'Jogue as embalagens usadas no [ ___ ].', word: 'lixo', options: ['X', 'CH'], correct: 0, explanation: 'LIXO se escreve com X!' },
-    { sentence: 'Comi um pedaço de [ ___ ] ao leite.', word: 'chocolate', options: ['CH', 'X'], correct: 0, explanation: 'CHOCOLATE se escreve com CH!' },
-    { sentence: 'O peixinho e o [ ___ ] nadavam no lago.', word: 'peixe', options: ['X', 'CH'], correct: 0, explanation: 'PEIXE se escreve com X!' },
-    { sentence: 'Calcei meus [ ___ ] confortáveis para caminhar.', word: 'chinelos', options: ['CH', 'X'], correct: 0, explanation: 'CHINELOS se escreve com CH!' },
-    { sentence: 'O palhaço encheu uma grande [ ___ ] vermelha.', word: 'bexiga', options: ['X', 'CH'], correct: 0, explanation: 'BEXIGA se escreve com X!' },
-    { sentence: 'Coloquei os cadernos dentro da minha [ ___ ].', word: 'mochila', options: ['CH', 'X'], correct: 0, explanation: 'MOCHILA se escreve com CH!' }
+    { sentence: 'A forte [ ___ ]uva molhou todas as calçadas.', word: 'chuva', options: ['CH', 'X'], correct: 0, explanation: 'CHUVA se escreve com CH!' },
+    { sentence: 'Vovó serviu chá quente em uma [ ___ ]ícara azul.', word: 'xícara', options: ['X', 'CH'], correct: 0, explanation: 'XÍCARA se escreve com X!' },
+    { sentence: 'Guardei meus brinquedos dentro da cai[ ___ ]a.', word: 'caixa', options: ['X', 'CH'], correct: 0, explanation: 'CAIXA se escreve com X!' },
+    { sentence: 'Usei a [ ___ ]ave dourada para abrir o portão.', word: 'chave', options: ['CH', 'X'], correct: 0, explanation: 'CHAVE se escreve com CH!' },
+    { sentence: 'Jogue as embalagens usadas no li[ ___ ]o.', word: 'lixo', options: ['X', 'CH'], correct: 0, explanation: 'LIXO se escreve com X!' },
+    { sentence: 'Comi um pedaço de [ ___ ]ocolate ao leite.', word: 'chocolate', options: ['CH', 'X'], correct: 0, explanation: 'CHOCOLATE se escreve com CH!' },
+    { sentence: 'O peixinho e o pei[ ___ ]e nadavam no lago.', word: 'peixe', options: ['X', 'CH'], correct: 0, explanation: 'PEIXE se escreve com X!' },
+    { sentence: 'Calcei meus [ ___ ]inelos confortáveis para caminhar.', word: 'chinelos', options: ['CH', 'X'], correct: 0, explanation: 'CHINELOS se escreve com CH!' },
+    { sentence: 'O palhaço encheu uma grande be[ ___ ]iga vermelha.', word: 'bexiga', options: ['X', 'CH'], correct: 0, explanation: 'BEXIGA se escreve com X!' },
+    { sentence: 'Coloquei os cadernos dentro da minha mo[ ___ ]ila.', word: 'mochila', options: ['CH', 'X'], correct: 0, explanation: 'MOCHILA se escreve com CH!' }
   ],
   g_j: [
-    { sentence: 'A elegante [ ___ ] alcança as folhas mais altas.', word: 'girafa', options: ['G', 'J'], correct: 0, explanation: 'GIRAFA se escreve com G!' },
-    { sentence: 'A perigosa [ ___ ] deslizava entre as pedras.', word: 'jibóia', options: ['J', 'G'], correct: 0, explanation: 'JIBÓIA se escreve com J!' },
-    { sentence: 'Coloquei cubos de [ ___ ] na limonada bem gelada.', word: 'gelo', options: ['G', 'J'], correct: 0, explanation: 'GELO se escreve com G!' },
-    { sentence: 'Abri a [ ___ ] do quarto para ver a luz do sol.', word: 'janela', options: ['J', 'G'], correct: 0, explanation: 'JANELA se escreve com J!' },
-    { sentence: 'Havia muita [ ___ ] animada na festa de aniversário.', word: 'gente', options: ['G', 'J'], correct: 0, explanation: 'GENTE se escreve com G!' },
-    { sentence: 'O grande [ ___ ] tomava sol na beira do rio.', word: 'jacaré', options: ['J', 'G'], correct: 0, explanation: 'JACARÉ se escreve com J!' },
-    { sentence: 'Olhei as horas no [ ___ ] de pulso.', word: 'relógio', options: ['G', 'J'], correct: 0, explanation: 'RELÓGIO se escreve com G!' },
-    { sentence: 'Vencemos o [ ___ ] de tabuleiro com os amigos.', word: 'jogo', options: ['J', 'G'], correct: 0, explanation: 'JOGO se escreve com J!' },
-    { sentence: 'O [ ___ ] tirou um coelho da cartola.', word: 'mágico', options: ['G', 'J'], correct: 0, explanation: 'MÁGICO se escreve com G!' },
-    { sentence: 'As flores coloridas perfumam todo o [ ___ ].', word: 'jardim', options: ['J', 'G'], correct: 0, explanation: 'JARDIM se escreve com J!' }
+    { sentence: 'A elegante [ ___ ]irafa alcança as folhas mais altas.', word: 'girafa', options: ['G', 'J'], correct: 0, explanation: 'GIRAFA se escreve com G!' },
+    { sentence: 'A perigosa [ ___ ]ibóia deslizava entre as pedras.', word: 'jibóia', options: ['J', 'G'], correct: 0, explanation: 'JIBÓIA se escreve com J!' },
+    { sentence: 'Coloquei cubos de [ ___ ]elo na limonada bem gelada.', word: 'gelo', options: ['G', 'J'], correct: 0, explanation: 'GELO se escreve com G!' },
+    { sentence: 'Abri a [ ___ ]anela do quarto para ver a luz do sol.', word: 'janela', options: ['J', 'G'], correct: 0, explanation: 'JANELA se escreve com J!' },
+    { sentence: 'Havia muita [ ___ ]ente animada na festa de aniversário.', word: 'gente', options: ['G', 'J'], correct: 0, explanation: 'GENTE se escreve com G!' },
+    { sentence: 'O grande [ ___ ]acaré tomava sol na beira do rio.', word: 'jacaré', options: ['J', 'G'], correct: 0, explanation: 'JACARÉ se escreve com J!' },
+    { sentence: 'Olhei as horas no reló[ ___ ]io de pulso.', word: 'relógio', options: ['G', 'J'], correct: 0, explanation: 'RELÓGIO se escreve com G!' },
+    { sentence: 'Vencemos o [ ___ ]ogo de tabuleiro com os amigos.', word: 'jogo', options: ['J', 'G'], correct: 0, explanation: 'JOGO se escreve com J!' },
+    { sentence: 'O má[ ___ ]ico tirou um coelho da cartola.', word: 'mágico', options: ['G', 'J'], correct: 0, explanation: 'MÁGICO se escreve com G!' },
+    { sentence: 'As flores coloridas perfumam todo o [ ___ ]ardim.', word: 'jardim', options: ['J', 'G'], correct: 0, explanation: 'JARDIM se escreve com J!' }
   ],
   s_ss_c_cedilha: [
-    { sentence: 'A mama cozinhou uma [ ___ ] italiana saborosa.', word: 'massa', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'MASSA se escreve com SS entre vogais para manter o som forte de S!' },
-    { sentence: 'O radiante [ ___ ] iluminou toda a praia.', word: 'sol', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'No início de palavras só se usa S simples (nunca SS ou Ç).' },
-    { sentence: 'A garota usava um lacinho fofo na [ ___ ].', word: 'cabeça', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CABEÇA se escreve com Ç antes da vogal A!' },
-    { sentence: 'O coelhinho adorava roer uma [ ___ ] fresca.', word: 'cenoura', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CENOURA se escreve com C (antes de E e I o C tem som de S).' },
-    { sentence: 'O bonito [ ___ ] azul cantava na gaiola.', word: 'pássaro', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'PÁSSARO se escreve com SS!' },
-    { sentence: 'O pequeno [ ___ ] verde deu um salto na lagoa.', word: 'sapo', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'SAPO começa com S simples.' },
-    { sentence: 'Sentiu uma alegria enorme bater no [ ___ ].', word: 'coração', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CORAÇÃO se escreve com Ç!' },
-    { sentence: 'A grande [ ___ ] tem prédios modernos e parques.', word: 'cidade', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CIDADE se escreve com C!' },
-    { sentence: 'O cachorro enterrou um saboroso [ ___ ] no jardim.', word: 'osso', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'OSSO se escreve com SS!' },
-    { sentence: 'Dei um forte [ ___ ] de carinho no meu irmão.', word: 'abraço', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'ABRAÇO se escreve com Ç!' }
+    { sentence: 'A mama cozinhou uma ma[ ___ ]a italiana saborosa.', word: 'massa', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'MASSA se escreve com SS entre vogais para manter o som forte de S!' },
+    { sentence: 'O radiante [ ___ ]ol iluminou toda a praia.', word: 'sol', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'No início de palavras só se usa S simples (nunca SS ou Ç).' },
+    { sentence: 'A garota usava um lacinho fofo na cabe[ ___ ]a.', word: 'cabeça', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CABEÇA se escreve com Ç antes da vogal A!' },
+    { sentence: 'O coelhinho adorava roer uma [ ___ ]enoura fresca.', word: 'cenoura', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CENOURA se escreve com C (antes de E e I o C tem som de S).' },
+    { sentence: 'O bonito pá[ ___ ]aro azul cantava na gaiola.', word: 'pássaro', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'PÁSSARO se escreve com SS!' },
+    { sentence: 'O pequeno [ ___ ]apo verde deu um salto na lagoa.', word: 'sapo', options: ['S', 'SS', 'C', 'Ç'], correct: 0, explanation: 'SAPO começa com S simples.' },
+    { sentence: 'Sentiu uma alegria enorme bater no cora[ ___ ]ão.', word: 'coração', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'CORAÇÃO se escreve com Ç!' },
+    { sentence: 'A grande [ ___ ]idade tem prédios modernos e parques.', word: 'cidade', options: ['C', 'S', 'Ç', 'SS'], correct: 0, explanation: 'CIDADE se escreve com C!' },
+    { sentence: 'O cachorro enterrou um saboroso o[ ___ ]o no jardim.', word: 'osso', options: ['SS', 'S', 'Ç', 'C'], correct: 0, explanation: 'OSSO se escreve com SS!' },
+    { sentence: 'Dei um forte abra[ ___ ]o de carinho no meu irmão.', word: 'abraço', options: ['Ç', 'C', 'S', 'SS'], correct: 0, explanation: 'ABRAÇO se escreve com Ç!' }
   ],
   acento_grafico: [
-    { sentence: 'Vovô toma um [ ___ ] quente todas as manhãs.', word: 'café', options: ['É', 'E'], correct: 0, explanation: 'CAFÉ leva acento agudo no É por ser oxítona aberta!' },
-    { sentence: 'A alta [ ___ ] centenária dava sombra no quintal.', word: 'árvore', options: ['Á', 'A'], correct: 0, explanation: 'ÁRVORE leva acento agudo no Á por ser proparoxítona!' },
-    { sentence: 'Acendi a [ ___ ] para ler meu livro à noite.', word: 'lâmpada', options: ['Â', 'A'], correct: 0, explanation: 'LÂMPADA leva acento circunflexo (Â) por ter som fechado e nasal!' },
-    { sentence: 'Os passageiros embarcaram no [ ___ ] amarelo.', word: 'ônibus', options: ['Ô', 'O'], correct: 0, explanation: 'ÔNIBUS leva acento circunflexo (Ô)!' },
-    { sentence: 'Comprei um [ ___ ] de morango na sorveteria.', word: 'picolé', options: ['É', 'E'], correct: 0, explanation: 'PICOLÉ leva acento agudo no É!' },
-    { sentence: 'O incrível [ ___ ] fez truques surpreendentes.', word: 'mágico', options: ['Á', 'A'], correct: 0, explanation: 'MÁGICO leva acento agudo no Á!' },
-    { sentence: 'O vovô contou uma história divertida para nós.', word: 'vovô', options: ['Ô', 'O'], correct: 0, explanation: 'VOVÔ tem som fechado e leva acento circunflexo!' },
-    { sentence: 'A vovó fez um bolo de chocolate delicioso.', word: 'vovó', options: ['Ó', 'O'], correct: 0, explanation: 'VOVÓ tem som aberto e leva acento agudo!' },
-    { sentence: 'O atleta correu muito [ ___ ] e venceu a prova.', word: 'rápido', options: ['Á', 'A'], correct: 0, explanation: 'RÁPIDO leva acento agudo no Á!' },
-    { sentence: 'A linda [ ___ ] alegrava todo o ambiente.', word: 'música', options: ['Ú', 'U'], correct: 0, explanation: 'MÚSICA leva acento agudo no Ú!' }
+    { sentence: 'Vovô toma um caf[ ___ ] quente todas as manhãs.', word: 'café', options: ['É', 'E'], correct: 0, explanation: 'CAFÉ leva acento agudo no É por ser oxítona aberta!' },
+    { sentence: 'A alta [ ___ ]rvore centenária dava sombra no quintal.', word: 'árvore', options: ['Á', 'A'], correct: 0, explanation: 'ÁRVORE leva acento agudo no Á por ser proparoxítona!' },
+    { sentence: 'Acendi a l[ ___ ]mpada para ler meu livro à noite.', word: 'lâmpada', options: ['Â', 'A'], correct: 0, explanation: 'LÂMPADA leva acento circunflexo (Â) por ter som fechado e nasal!' },
+    { sentence: 'Os passageiros embarcaram no [ ___ ]nibus amarelo.', word: 'ônibus', options: ['Ô', 'O'], correct: 0, explanation: 'ÔNIBUS leva acento circunflexo (Ô)!' },
+    { sentence: 'Comprei um picol[ ___ ] de morango na sorveteria.', word: 'picolé', options: ['É', 'E'], correct: 0, explanation: 'PICOLÉ leva acento agudo no É!' },
+    { sentence: 'O incrível m[ ___ ]gico fez truques surpreendentes.', word: 'mágico', options: ['Á', 'A'], correct: 0, explanation: 'MÁGICO leva acento agudo no Á!' },
+    { sentence: 'O vov[ ___ ] contou uma história divertida para nós.', word: 'vovô', options: ['Ô', 'O'], correct: 0, explanation: 'VOVÔ tem som fechado e leva acento circunflexo!' },
+    { sentence: 'A vov[ ___ ] fez um bolo de chocolate delicioso.', word: 'vovó', options: ['Ó', 'O'], correct: 0, explanation: 'VOVÓ tem som aberto e leva acento agudo!' },
+    { sentence: 'O atleta correu muito r[ ___ ]pido e venceu a prova.', word: 'rápido', options: ['Á', 'A'], correct: 0, explanation: 'RÁPIDO leva acento agudo no Á!' },
+    { sentence: 'A linda m[ ___ ]sica alegrava todo o ambiente.', word: 'música', options: ['Ú', 'U'], correct: 0, explanation: 'MÚSICA leva acento agudo no Ú!' }
   ]
 };
 
@@ -1351,7 +1351,6 @@ class UIController {
       el.textContent = `${activeMascot.icon} ${activeMascot.name}`;
     });
 
-    // FOTO DO PERSONAGEM BEM MAIOR NO MENU PRINCIPAL (260px x 260px)
     const heroMascotContainer = document.querySelector('.hero-mascot-container');
     if (heroMascotContainer && activeMascot) {
       heroMascotContainer.style.width = '260px';
@@ -1370,7 +1369,6 @@ class UIController {
     }
   }
 
-  // RENDERIZAÇÃO DAS MISSÕES COM CADA ÍCONE E TEMÁTICA EXCLUSIVA DA MISSÃO
   renderCategorySelection(containerEl, onSelectCategory) {
     if (!containerEl) return;
     const playerData = this.game.playerData || { stars: {} };
@@ -1388,7 +1386,6 @@ class UIController {
 
       return `
         <div class="category-card" data-id="${cat.id}" style="background: #0F172A !important; border: 2.5px solid ${cat.badgeColor || '#38BDF8'} !important; border-radius: 24px !important; padding: 24px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; gap: 16px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.6) !important; cursor: pointer !important; transition: all 0.2s ease !important;">
-          <!-- BANNER HEADER COM ÍCONE DIVERSIFICADO DE CADA MISSÃO -->
           <div class="cat-banner-header" style="background: ${cat.bgGradient} !important; border-radius: 16px !important; padding: 18px !important; display: flex !important; align-items: center !important; justify-content: space-between !important; box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;">
             <div style="display: flex !important; align-items: center !important; gap: 14px !important;">
               <span class="cat-icon-badge" style="font-size: 2.8rem !important; background: rgba(0,0,0,0.35) !important; padding: 10px 16px !important; border-radius: 18px !important; border: 1.5px solid rgba(255,255,255,0.3) !important;">${cat.icon}</span>
@@ -1431,9 +1428,9 @@ class UIController {
   }
 
   getMaskedParts(question) {
-    if (!question) return { prefix: '', gapText: '[ _____ ]', suffix: '' };
+    if (!question || !question.sentence) return { prefix: '', gapText: '[ ___ ]', suffix: '' };
     
-    if (question.sentence && question.sentence.includes('[ ___ ]')) {
+    if (question.sentence.includes('[ ___ ]')) {
       const parts = question.sentence.split('[ ___ ]');
       return {
         prefix: parts[0] || '',
@@ -1442,8 +1439,7 @@ class UIController {
       };
     }
 
-    const word = (question.sentence || question.word || '').trim();
-    return { prefix: '', gapText: `[ ${word} ]`, suffix: '' };
+    return { prefix: question.sentence, gapText: '', suffix: '' };
   }
 
   renderQuestion(question, onSelectOption) {
@@ -1478,16 +1474,16 @@ class UIController {
 
     const mascotBubble = document.querySelector('.game-mascot-bubble');
     if (mascotBubble) {
-      mascotBubble.textContent = activeMascot.quote || 'Leia a frase com atenção e complete a palavra!';
+      mascotBubble.textContent = activeMascot.quote || 'Complete a palavra selecionando a letra correta!';
     }
 
     const sentenceEl = document.querySelector('.game-sentence');
     if (sentenceEl) {
       const { prefix, gapText, suffix } = this.getMaskedParts(question);
       sentenceEl.innerHTML = `
-        ${prefix ? `<span>${prefix}</span>` : ''}
-        <span class="gap-highlight">${gapText}</span>
-        ${suffix ? `<span>${suffix}</span>` : ''}
+        <div style="font-size: 1.35rem !important; color: #FFFFFF !important; font-weight: 700 !important; line-height: 1.7 !important; text-align: center !important;">
+          ${prefix}<span class="gap-highlight" style="display: inline-block !important; min-width: 50px !important; padding: 4px 14px !important; background: rgba(56,189,248,0.25) !important; border: 2.5px dashed #38BDF8 !important; border-radius: 12px !important; color: #34D399 !important; font-weight: 900 !important; text-align: center !important; margin: 0 4px !important;">[ ___ ]</span>${suffix}
+        </div>
       `;
     }
 
@@ -1502,7 +1498,7 @@ class UIController {
     const optionsContainer = document.querySelector('.game-options-grid');
     if (optionsContainer) {
       optionsContainer.innerHTML = question.options.map((opt, idx) => `
-        <button class="btn btn-3d btn-option" data-index="${idx}">
+        <button class="btn btn-3d btn-option" data-index="${idx}" style="font-size: 1.4rem !important; font-weight: 900 !important;">
           ${opt}
         </button>
       `).join('');
