@@ -1,9 +1,9 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * 1. Destaque Visual Dourado para a Palavra Alvo (.target-word-highlight)
- * 2. Lacuna Compacta Padronizada [_] em Todos os Exercícios
- * 3. Leitura com Espaçamento de Palavras Aumentado (word-spacing: 8px; line-height: 2.2)
- * 4. Proteção Total do Banco de Dados (guardiao.db) no Gitignore.
+ * 1. Sistema de Login Real com Registro e Persistência no Banco de Dados SQLite (guardiao.db)
+ * 2. Foto Gigante de Destaque na Tela Inicial (380px por 380px com cantos arredondados)
+ * 3. Destaque Visual Dourado para a Palavra Alvo (.target-word-highlight)
+ * 4. Lacuna Compacta Padronizada [_] em Todos os Exercícios com Espaçamento Aumentado
  */
 
 // 1. DADOS DE PERGUNTAS E CATEGORIAS COM OS TEMAS DE PERSONAGENS EXATOS DA FOTO 2
@@ -1237,7 +1237,7 @@ class GameEngine {
       sessionStorage.removeItem(SESSION_ACTIVE_PROFILE_KEY);
     }
     this.savePlayerData();
-    return { success: true, message: 'Perfil excluído com sucesso!' };
+    return { success: true, message: 'Perfil excluído com sucesso do Banco de Dados!' };
   }
 
   hasActiveProfile() {
@@ -1305,36 +1305,35 @@ class GameEngine {
   }
 
   async fetchDbProfiles() {
-    try {
-      const cloudProfiles = await cloudDb.fetchProfiles();
-      if (cloudProfiles && typeof cloudProfiles === 'object') {
-        Object.keys(cloudProfiles).forEach(id => {
-          this.profilesData.profiles[id] = cloudProfiles[id];
-        });
-        this.savePlayerData();
-        return Object.values(this.profilesData.profiles);
-      }
-    } catch (e) {}
-
-    try {
-      const res = await fetch('/api/profiles');
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.success && Array.isArray(data.profiles)) {
-          data.profiles.forEach(p => {
-            if (!this.profilesData.profiles[p.id]) {
-              this.profilesData.profiles[p.id] = {
-                ...this.createDefaultPlayerData(p.name),
+    if (window.location.protocol.startsWith('http')) {
+      try {
+        const res = await fetch('/api/profiles');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.profiles)) {
+            const freshMap = {};
+            data.profiles.forEach(p => {
+              freshMap[p.id] = {
+                ...(this.profilesData.profiles[p.id] || this.createDefaultPlayerData(p.name)),
                 ...p,
                 passwordHash: p.hasPassword ? 'DB_PROTECTED' : ''
               };
+            });
+            this.profilesData.profiles = freshMap;
+            
+            if (this.activeProfileId && freshMap[this.activeProfileId]) {
+              this.playerData = freshMap[this.activeProfileId];
+            } else if (data.profiles.length > 0 && !this.activeProfileId) {
+              this.activeProfileId = data.profiles[0].id;
+              this.playerData = freshMap[this.activeProfileId];
             }
-          });
-          this.savePlayerData();
-          return data.profiles;
+
+            this.savePlayerData();
+            return Object.values(freshMap);
+          }
         }
-      }
-    } catch (e) {}
+      } catch (e) {}
+    }
 
     return this.getProfiles();
   }
@@ -1352,7 +1351,7 @@ class GameEngine {
 
       localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profilesData));
 
-      if (this.playerData) {
+      if (this.playerData && window.location.protocol.startsWith('http')) {
         fetch('/api/profiles/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1388,30 +1387,28 @@ class GameEngine {
 
   async createProfile(name, password = '', hint = '') {
     const pwdHash = await this.hashPassword(password);
-    const newProfile = this.createDefaultPlayerData(name, pwdHash, hint);
+    let newProfile = this.createDefaultPlayerData(name, pwdHash, hint);
+
+    if (window.location.protocol.startsWith('http')) {
+      try {
+        const res = await fetch('/api/profiles/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, password, hint })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.profile) {
+            newProfile = { ...newProfile, ...data.profile };
+          }
+        }
+      } catch (e) {}
+    }
 
     this.profilesData.profiles[newProfile.id] = newProfile;
     this.activeProfileId = newProfile.id;
     this.playerData = newProfile;
     this.savePlayerData();
-
-    try {
-      const res = await fetch('/api/profiles/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, password })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.profile) {
-          this.profilesData.profiles[data.profile.id] = { ...newProfile, ...data.profile };
-          delete this.profilesData.profiles[newProfile.id];
-          this.activeProfileId = data.profile.id;
-          this.playerData = this.profilesData.profiles[data.profile.id];
-          this.savePlayerData();
-        }
-      }
-    } catch (e) {}
 
     return newProfile;
   }
@@ -1425,7 +1422,7 @@ class GameEngine {
     const profile = this.profilesData.profiles[profileId];
     if (!profile || !profile.passwordHash) return true;
 
-    if (profile.passwordHash === 'DB_PROTECTED') {
+    if (profile.passwordHash === 'DB_PROTECTED' && window.location.protocol.startsWith('http')) {
       try {
         const res = await fetch('/api/profiles/login', {
           method: 'POST',
@@ -1844,18 +1841,26 @@ class UIController {
       el.textContent = `${activeMascot.icon} ${activeMascot.name}`;
     });
 
+    // EXIBIÇÃO DA FOTO GIGANTE DO MASCOTE / USUÁRIO NA TELA INICIAL (380px x 380px)
     const heroMascotContainer = document.querySelector('.hero-mascot-container');
     if (heroMascotContainer && activeMascot) {
-      heroMascotContainer.style.width = '260px';
-      heroMascotContainer.style.height = '260px';
-      if (activeMascot.img) {
+      heroMascotContainer.style.width = '380px';
+      heroMascotContainer.style.height = '380px';
+      heroMascotContainer.style.maxWidth = '90vw';
+      heroMascotContainer.style.maxHeight = '90vw';
+
+      const displayPhoto = (playerData && playerData.customProfilePhoto) 
+        ? playerData.customProfilePhoto 
+        : activeMascot.img;
+
+      if (displayPhoto) {
         heroMascotContainer.innerHTML = `
-          <img class="hero-mascot-real-img" src="${activeMascot.img}" alt="${activeMascot.name}" style="width: 260px !important; height: 260px !important; border-radius: 50% !important; object-fit: cover !important; object-position: center top !important; border: 4px solid ${activeMascot.neonColor || '#38BDF8'} !important; box-shadow: 0 0 45px ${activeMascot.neonColor || '#38BDF8'} !important;" />
+          <img class="hero-mascot-real-img" src="${displayPhoto}" alt="${activeMascot.name}" style="width: 380px !important; height: 380px !important; max-width: 90vw !important; max-height: 90vw !important; border-radius: 32px !important; object-fit: cover !important; object-position: center !important; border: 4px solid ${activeMascot.neonColor || '#38BDF8'} !important; box-shadow: 0 0 50px ${activeMascot.neonColor || '#38BDF8'} !important;" />
           <span class="hero-sparkles">⚡</span>
         `;
       } else {
         heroMascotContainer.innerHTML = `
-          <span class="hero-mascot-icon" style="font-size: 8rem;">${activeMascot.icon || '🕷️'}</span>
+          <span class="hero-mascot-icon" style="font-size: 10rem;">${activeMascot.icon || '🕷️'}</span>
           <span class="hero-sparkles">⚡</span>
         `;
       }
@@ -2798,7 +2803,7 @@ class UIController {
         this.renderProfilesList();
         this.updateActiveUserModalPreview();
         modal.classList.remove('active');
-        alert(`🎉 Perfil do ${name} criado e protegido por senha com sucesso! Boa sorte!`);
+        alert(`🎉 Perfil do ${name} criado e salvo no Banco de Dados com sucesso!`);
       };
     }
 

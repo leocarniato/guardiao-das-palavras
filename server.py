@@ -329,6 +329,21 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json({'success': False, 'error': str(e)}, 500)
                 return
 
+        elif parsed.path == '/api/profiles/delete':
+            profile_id = payload.get('id')
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM profiles WHERE id = ?", (profile_id,))
+                conn.commit()
+                conn.close()
+                self.send_json({'success': True, 'message': 'Perfil excluído do banco de dados SQLite com sucesso!'})
+                return
+            except Exception as e:
+                print("Erro ao excluir perfil no SQLite:", e)
+                self.send_json({'success': False, 'message': str(e)}, 500)
+                return
+
         elif parsed.path == '/api/admin/db-dump':
             try:
                 conn = get_db_connection()
