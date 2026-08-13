@@ -618,18 +618,23 @@ export class UIController {
         `;
       }
 
-      const mascotName = isSecretLocked ? '❓ Mascote Secreto Misterioso' : mascot.name;
-      const mascotDesc = isSecretLocked ? 'Personagem secreto do mundo obscuro! Solta raios laser pelos olhos e voa pelo céu!' : mascot.description;
-      const mascotQuote = isSecretLocked ? '??? (Desbloqueie para revelar!)' : `"${mascot.quote}"`;
-      const mascotImgStyle = isSecretLocked ? 'filter: brightness(0) drop-shadow(0 0 16px #F59E0B);' : '';
-      const mascotBadge = isSecretLocked ? '❓' : mascot.icon;
+      const mascotName = isSecretLocked ? '🔒 Personagem Secreto' : mascot.name;
+      const mascotDesc = isSecretLocked ? '🔒 Herói misterioso do universo ortográfico! Desbloqueie para revelar a foto, frases e poderes especiais!' : mascot.description;
+      const mascotQuote = isSecretLocked ? '🔒 "???" (Desbloqueie para revelar!)' : `"${mascot.quote}"`;
+
+      const mascotImgHtml = isSecretLocked
+        ? `<div class="shop-mascot-secret-box" style="width: 100%; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #1E293B 0%, #020617 100%); border-radius: 18px; border: 2px dashed #F59E0B; margin-bottom: 12px;">
+             <span style="font-size: 4.2rem; filter: drop-shadow(0 0 16px #F59E0B);">❓</span>
+             <span style="font-family: var(--font-heading); font-size: 0.8rem; color: #F59E0B; font-weight: 800; margin-top: 6px; letter-spacing: 1px;">MASCOTE SECRETO</span>
+           </div>`
+        : `<div class="shop-mascot-img-container">
+             <img class="shop-mascot-real-img" src="${mascot.img}" alt="${mascotName}" />
+             <span class="shop-mascot-badge">${mascot.icon}</span>
+           </div>`;
 
       return `
         <div class="shop-card ${mascot.active ? 'active-mascot' : ''}" style="--neon-accent: ${mascot.neonColor};">
-          <div class="shop-mascot-img-container">
-            <img class="shop-mascot-real-img" src="${mascot.img}" alt="${mascotName}" style="${mascotImgStyle}" />
-            <span class="shop-mascot-badge">${mascotBadge}</span>
-          </div>
+          ${mascotImgHtml}
           <h3>${mascotName}</h3>
           <p class="shop-desc">${mascotDesc}</p>
           <p class="shop-quote">${mascotQuote}</p>

@@ -104,6 +104,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  const btnHeaderAdmin = document.getElementById('btn-header-admin');
+  if (btnHeaderAdmin) {
+    btnHeaderAdmin.onclick = () => {
+      ui.openAdminPinModal();
+    };
+  }
+
+  const btnOpenAdmin = document.getElementById('btn-open-admin');
+  if (btnOpenAdmin) {
+    btnOpenAdmin.onclick = () => {
+      ui.openAdminPinModal();
+    };
+  }
+
   // Botões de Voltar ao Menu nas Telas Secundárias
   document.querySelectorAll('.btn-back-menu').forEach(btn => {
     btn.onclick = () => ui.showScreen('menu-screen');

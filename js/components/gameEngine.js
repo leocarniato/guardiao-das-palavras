@@ -53,7 +53,8 @@ export const MASCOTS = [
     bgGradient: 'linear-gradient(135deg, #090D16 0%, #1E293B 50%, #475569 100%)',
     neonColor: '#F59E0B',
     description: 'O Cavaleiro das Sombras com batrangue de acentuação!',
-    quote: 'Eu sou a justiça ortográfica da noite!'
+    quote: 'Eu sou a justiça ortográfica da noite!',
+    secret: true
   },
   {
     id: 'minion',
@@ -77,7 +78,8 @@ export const MASCOTS = [
     bgGradient: 'linear-gradient(135deg, #3B0764 0%, #6B21A8 40%, #047857 100%)',
     neonColor: '#A855F7',
     description: 'Cavaleiro Dragão Épico em armadura púrpura reluzente!',
-    quote: 'Game Over pros erros com espadas de raio!'
+    quote: 'Game Over pros erros com espadas de raio!',
+    secret: true
   },
   {
     id: 'veloz',
