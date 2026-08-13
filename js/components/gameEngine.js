@@ -286,9 +286,20 @@ export class GameEngine {
     this.profilesData.profiles[newId] = newProfile;
     this.activeProfileId = newId;
     this.playerData = newProfile;
-    this.savePlayerData();
 
-    // Envia criação para API Python se ativa
+    // 1. Salva no localStorage
+    try {
+      localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profilesData));
+    } catch (e) {}
+
+    // 2. Insere a nova linha no Banco de Dados do Supabase na Nuvem
+    try {
+      await supabaseService.createProfile(newProfile);
+    } catch (e) {
+      console.warn('Erro ao inserir no Supabase:', e);
+    }
+
+    // 3. Notifica backend local se disponível
     fetch('/api/profiles/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

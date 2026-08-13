@@ -1,56 +1,45 @@
 /**
- * Serviço de Conexão com o Supabase (Nuvem 24/7 Multi-Dispositivo)
- * Conecta o jogo no GitHub Pages diretamente ao Banco de Dados Relacional PostgreSQL no Supabase.
+ * Serviço de Conexão com o Supabase REST API Nativo (Nuvem 24/7 Multi-Dispositivo)
+ * Conecta o jogo no GitHub Pages diretamente ao Banco de Dados Relacional PostgreSQL no Supabase via HTTP REST Nativo.
  */
 
-// Insira abaixo a URL e a Chave Pública (anon/public key) do seu projeto no Supabase:
 export const SUPABASE_URL = 'https://ofrxxkiyhfvulrqosfcu.supabase.co'; 
 export const SUPABASE_ANON_KEY = 'sb_publishable_Gs6V7chvRMWJjmsCD3iX4w_w3qAewhb';
 
 export class SupabaseService {
   constructor() {
-    this.client = null;
-    this.initClient();
+    this.baseUrl = `${SUPABASE_URL}/rest/v1/profiles`;
   }
 
-  initClient() {
-    if (window.supabase && SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
-      try {
-        this.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('⚡ Conectado ao Supabase Cloud Database com sucesso!');
-      } catch (e) {
-        console.warn('Erro ao inicializar cliente Supabase:', e);
-      }
-    }
-  }
-
-  isConfigured() {
-    if (!this.client && window.supabase && SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
-      this.initClient();
-    }
-    return Boolean(this.client);
+  getHeaders(extraHeaders = {}) {
+    return {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      ...extraHeaders
+    };
   }
 
   // Busca todos os perfis cadastrados no Supabase
   async fetchProfiles() {
-    if (!this.isConfigured()) return null;
     try {
-      const { data, error } = await this.client
-        .from('profiles')
-        .select('*')
-        .order('updated_at', { ascending: false });
+      const res = await fetch(`${this.baseUrl}?select=*&order=updated_at.desc`, {
+        method: 'GET',
+        headers: this.getHeaders()
+      });
 
-      if (error) throw error;
-      return data;
+      if (res.ok) {
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      }
     } catch (e) {
       console.warn('Erro ao buscar perfis do Supabase:', e);
-      return null;
     }
+    return null;
   }
 
   // Registra um novo perfil na nuvem do Supabase
   async createProfile(profileData) {
-    if (!this.isConfigured()) return null;
     try {
       const payload = {
         id: profileData.id,
@@ -69,22 +58,25 @@ export class SupabaseService {
         stats: profileData.stats || {}
       };
 
-      const { data, error } = await this.client
-        .from('profiles')
-        .insert([payload])
-        .select();
+      const res = await fetch(this.baseUrl, {
+        method: 'POST',
+        headers: this.getHeaders({ 'Prefer': 'return=representation' }),
+        body: JSON.stringify(payload)
+      });
 
-      if (error) throw error;
-      return data ? data[0] : null;
+      if (res.ok) {
+        const data = await res.json();
+        return Array.isArray(data) && data.length > 0 ? data[0] : payload;
+      }
     } catch (e) {
       console.warn('Erro ao criar perfil no Supabase:', e);
-      return null;
     }
+    return null;
   }
 
   // Sincroniza e salva alterações de moedas, nível e mascote no Supabase
   async saveProfile(playerData) {
-    if (!this.isConfigured() || !playerData || !playerData.id) return false;
+    if (!playerData || !playerData.id) return false;
     try {
       const payload = {
         coins: playerData.coins,
@@ -100,13 +92,13 @@ export class SupabaseService {
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await this.client
-        .from('profiles')
-        .update(payload)
-        .eq('id', playerData.id);
+      const res = await fetch(`${this.baseUrl}?id=eq.${encodeURIComponent(playerData.id)}`, {
+        method: 'PATCH',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload)
+      });
 
-      if (error) throw error;
-      return true;
+      return res.ok;
     } catch (e) {
       console.warn('Erro ao salvar no Supabase:', e);
       return false;
@@ -115,15 +107,19 @@ export class SupabaseService {
 
   // Redefine a senha de um perfil no Supabase
   async resetPassword(profileId, newPasswordHash) {
-    if (!this.isConfigured()) return false;
     try {
-      const { error } = await this.client
-        .from('profiles')
-        .update({ password_hash: newPasswordHash, updated_at: new Date().toISOString() })
-        .eq('id', profileId);
+      const payload = {
+        password_hash: newPasswordHash,
+        updated_at: new Date().toISOString()
+      };
 
-      if (error) throw error;
-      return true;
+      const res = await fetch(`${this.baseUrl}?id=eq.${encodeURIComponent(profileId)}`, {
+        method: 'PATCH',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload)
+      });
+
+      return res.ok;
     } catch (e) {
       console.warn('Erro ao redefinir senha no Supabase:', e);
       return false;
@@ -132,15 +128,13 @@ export class SupabaseService {
 
   // Remove um perfil do Supabase
   async deleteProfile(profileId) {
-    if (!this.isConfigured()) return false;
     try {
-      const { error } = await this.client
-        .from('profiles')
-        .delete()
-        .eq('id', profileId);
+      const res = await fetch(`${this.baseUrl}?id=eq.${encodeURIComponent(profileId)}`, {
+        method: 'DELETE',
+        headers: this.getHeaders()
+      });
 
-      if (error) throw error;
-      return true;
+      return res.ok;
     } catch (e) {
       console.warn('Erro ao deletar perfil do Supabase:', e);
       return false;
