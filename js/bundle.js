@@ -1,7 +1,8 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Suporte completo a Celular/Smartphones, WebCam, Mascotes no Quadrado Perfeito (object-fit: contain)
- * e Troca Automática da Foto de Perfil ao Mudar de Mascote/Tema.
+ * Suporte completo a Celular/Smartphones, WebCam, Mascotes no Quadrado Perfeito (object-fit: contain),
+ * Pronúncia HD do Google Tradutor e Painel do Administrador (ADM) completo para gerenciar perfis,
+ * redefinir senhas, apagar usuários e conceder recompensas.
  */
 
 // 1. DADOS DE PERGUNTAS E CATEGORIAS
@@ -616,6 +617,10 @@ class GameEngine {
     this.questionsData = QUESTIONS_DATA;
 
     this.profilesData = this.loadProfilesData();
+    if (!this.profilesData.masterPin) {
+      this.profilesData.masterPin = '1234';
+    }
+
     this.activeProfileId = this.profilesData.activeProfileId || null;
     
     this.playerData = (this.activeProfileId && this.profilesData.profiles && this.profilesData.profiles[this.activeProfileId])
@@ -645,6 +650,81 @@ class GameEngine {
     this.levelScore = 0;
     this.levelCorrectCount = 0;
     this.streak = 0;
+  }
+
+  adminVerifyMasterPin(pinInput) {
+    const currentPin = this.profilesData.masterPin || '1234';
+    return (pinInput && pinInput.trim() === currentPin);
+  }
+
+  adminSetMasterPin(newPin) {
+    if (!newPin || newPin.trim().length < 4) {
+      return { success: false, message: 'O PIN Mestre deve ter pelo menos 4 dígitos!' };
+    }
+    this.profilesData.masterPin = newPin.trim();
+    this.savePlayerData();
+    return { success: true, message: 'PIN Mestre do Administrador atualizado com sucesso!' };
+  }
+
+  async adminResetPassword(profileId, newPassword) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return { success: false, message: 'Perfil não encontrado!' };
+
+    const newHash = await this.hashPassword(newPassword);
+    profile.passwordHash = newHash;
+    this.savePlayerData();
+
+    try {
+      fetch('/api/profiles/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: profileId, newPassword })
+      }).catch(() => {});
+    } catch (e) {}
+
+    return { success: true, message: `Senha do perfil '${profile.name}' redefinida com sucesso!` };
+  }
+
+  adminGrantCoins(profileId, amount = 100) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+
+    profile.coins = (profile.coins || 0) + amount;
+    this.savePlayerData();
+    return true;
+  }
+
+  adminUnlockAllMascots(profileId) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+
+    const allMascotIds = MASCOTS.map(m => m.id);
+    profile.unlockedMascots = [...allMascotIds];
+    this.savePlayerData();
+    return true;
+  }
+
+  async deleteProfile(profileId) {
+    const keys = Object.keys(this.profilesData.profiles);
+    if (keys.length <= 1) {
+      return { success: false, message: 'Não é possível excluir o único perfil existente!' };
+    }
+
+    try {
+      await fetch('/api/profiles/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: profileId })
+      });
+    } catch (e) {}
+
+    delete this.profilesData.profiles[profileId];
+    if (this.activeProfileId === profileId) {
+      this.activeProfileId = Object.keys(this.profilesData.profiles)[0];
+      this.playerData = this.profilesData.profiles[this.activeProfileId];
+    }
+    this.savePlayerData();
+    return { success: true, message: 'Perfil excluído com sucesso!' };
   }
 
   hasActiveProfile() {
@@ -706,6 +786,7 @@ class GameEngine {
 
     return {
       activeProfileId: null,
+      masterPin: '1234',
       profiles: {}
     };
   }
@@ -834,29 +915,6 @@ class GameEngine {
     return profile.passwordHash === inputHash;
   }
 
-  async resetPasswordWithMasterPin(profileId, masterPinInput, newPassword) {
-    if (masterPinInput !== '1234') {
-      return { success: false, message: 'PIN Mestre dos Pais incorreto! O PIN padrão é 1234.' };
-    }
-
-    const profile = this.profilesData.profiles[profileId];
-    if (!profile) return { success: false, message: 'Perfil não encontrado!' };
-
-    const newHash = await this.hashPassword(newPassword);
-    profile.passwordHash = newHash;
-    this.savePlayerData();
-
-    try {
-      fetch('/api/profiles/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: profileId, newPassword })
-      }).catch(() => {});
-    } catch (e) {}
-
-    return { success: true, message: 'Senha redefinida com sucesso!' };
-  }
-
   async selectProfile(profileId, passwordInput = '') {
     if (!this.profilesData.profiles[profileId]) return false;
 
@@ -916,13 +974,6 @@ class GameEngine {
       return true;
     }
     return false;
-  }
-
-  deletePhotoFromGallery(photoId) {
-    if (!this.playerData || !this.playerData.photoGallery) return false;
-    this.playerData.photoGallery = this.playerData.photoGallery.filter(p => p.id !== photoId);
-    this.savePlayerData();
-    return true;
   }
 
   startLevel(categoryId) {
@@ -1213,8 +1264,6 @@ class UIController {
       document.documentElement.style.setProperty('--neon-glow', activeMascot.neonColor || '#10B981');
     }
 
-    // Se o jogador tiver tirado uma foto própria personalizada (customProfilePhoto), usa a foto dele.
-    // Se NÃO tiver foto de webcam/celular personalizada, A FOTO DO PERFIL MUDA AUTOMATICAMENTE JUNTO COM O MASCOTE EQUIPADO!
     const userPhotoEl = document.getElementById('header-user-photo');
     if (userPhotoEl) {
       const displayPhoto = (playerData && playerData.customProfilePhoto) 
@@ -1604,7 +1653,6 @@ class UIController {
     }
   }
 
-  // Renderização dos Mascotes Enquadrados perfeitamente no Quadrado (object-fit: contain)
   renderShop(containerEl) {
     if (!containerEl) return;
     const mascots = this.game.getMascots();
@@ -1613,7 +1661,6 @@ class UIController {
 
     containerEl.innerHTML = mascots.map(m => `
       <div class="shop-card ${m.active ? 'equipped' : ''}" style="background: #0F172A !important; border: 2.5px solid ${m.active ? '#10B981' : '#38BDF8'} !important; border-radius: 24px !important; padding: 20px !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 14px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;">
-        <!-- Caixa Quadrada com gradiente do tema e imagem que ENCAIXA 100% no quadrado (object-fit: contain) -->
         <div class="shop-mascot-img-container" style="width: 100% !important; height: 220px !important; max-height: 220px !important; background: ${m.bgGradient || '#020617'} !important; border-radius: 18px !important; overflow: hidden !important; position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 2px solid ${m.neonColor || '#38BDF8'} !important; box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important; padding: 8px !important;">
           <img class="shop-mascot-real-img" src="${m.img}" alt="${m.name}" style="width: 100% !important; height: 100% !important; object-fit: contain !important; object-position: center !important; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.7)) !important;" />
           <span style="position: absolute !important; top: 10px !important; right: 10px !important; background: rgba(15,23,42,0.85) !important; padding: 4px 10px !important; border-radius: 12px !important; font-size: 1.4rem !important; border: 1px solid rgba(255,255,255,0.2) !important;">${m.icon}</span>
@@ -1685,7 +1732,6 @@ class UIController {
     });
   }
 
-  // Estúdio de Foto com Suporte a WebCam USB e Câmera do Celular / Smartphones
   openPhotoBooth(mascot) {
     const modal = document.getElementById('photobooth-modal');
     if (!modal) return;
@@ -1701,7 +1747,6 @@ class UIController {
     if (mascotNameEl) mascotNameEl.textContent = mascot.name || '';
     if (countdownEl) countdownEl.style.display = 'none';
 
-    // Suporte Avançado a Câmeras (Desktop WebCam e Celulares Frontal/Traseira)
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
@@ -1711,11 +1756,10 @@ class UIController {
         if (videoEl) videoEl.srcObject = stream;
       })
       .catch(err => {
-        console.warn('Câmera em tempo real indisponível:', err);
+        console.warn('Câmera indisponível:', err);
       });
     }
 
-    // Configuração para Celulares / Upload de Foto Nativo do Aparelho
     const inputMobile = document.getElementById('input-mobile-photo');
     const btnUpload = document.getElementById('btn-upload-photo');
 
@@ -1803,16 +1847,13 @@ class UIController {
     ctx.fillStyle = '#020617';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Metade Esquerda: Foto enviada do Celular
     ctx.save();
     ctx.drawImage(userImg, 0, 0, 320, 320);
     ctx.restore();
 
-    // Linha Neon
     ctx.fillStyle = mascot.neonColor || '#38BDF8';
     ctx.fillRect(318, 0, 4, 320);
 
-    // Metade Direita: Mascote
     const mascotImg = new Image();
     mascotImg.crossOrigin = 'anonymous';
     mascotImg.src = mascot.img;
@@ -1919,6 +1960,167 @@ class UIController {
 
   renderParentPanel(containerEl) {
     parentReport.render(containerEl, this.game.playerData);
+  }
+
+  // PAINEL DO ADMINISTRADOR (ADM) & VALIDAÇÃO DE PIN MESTRE
+  openAdminPinModal() {
+    const pinModal = document.getElementById('admin-pin-modal');
+    if (!pinModal) return;
+
+    const inputPin = document.getElementById('input-admin-pin');
+    const btnConfirm = document.getElementById('btn-confirm-admin-pin');
+    const btnCancel = document.getElementById('btn-cancel-admin-pin');
+    const errorMsg = document.getElementById('admin-pin-error');
+
+    if (inputPin) inputPin.value = '';
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    if (btnCancel) {
+      btnCancel.onclick = () => pinModal.classList.remove('active');
+    }
+
+    if (btnConfirm && inputPin) {
+      btnConfirm.onclick = () => {
+        const pin = inputPin.value.trim();
+        if (this.game.adminVerifyMasterPin(pin)) {
+          pinModal.classList.remove('active');
+          soundManager.playFanfare();
+          this.openAdminModal();
+        } else {
+          if (errorMsg) errorMsg.style.display = 'block';
+          soundManager.playError();
+        }
+      };
+    }
+
+    pinModal.classList.add('active');
+  }
+
+  openAdminModal() {
+    const adminModal = document.getElementById('admin-modal');
+    if (!adminModal) return;
+
+    this.renderAdminProfilesGrid();
+
+    const btnClose = document.getElementById('btn-close-admin-modal');
+    if (btnClose) {
+      btnClose.onclick = () => adminModal.classList.remove('active');
+    }
+
+    const inputNewPin = document.getElementById('input-admin-new-pin');
+    const btnChangePin = document.getElementById('btn-admin-change-pin');
+    if (btnChangePin && inputNewPin) {
+      btnChangePin.onclick = () => {
+        const newPin = inputNewPin.value.trim();
+        const res = this.game.adminSetMasterPin(newPin);
+        alert(res.message);
+        if (res.success) {
+          inputNewPin.value = '';
+        }
+      };
+    }
+
+    adminModal.classList.add('active');
+  }
+
+  renderAdminProfilesGrid() {
+    const container = document.getElementById('admin-profiles-grid');
+    if (!container) return;
+
+    const profiles = this.game.getProfiles();
+
+    if (profiles.length === 0) {
+      container.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 20px;">Nenhum usuário cadastrado.</div>`;
+      return;
+    }
+
+    container.innerHTML = profiles.map(p => {
+      const activeMascotObj = this.game.getMascots().find(m => m.id === (p.activeMascot || 'aranha')) || {};
+      const photoSrc = p.customProfilePhoto || p.profilePhoto || activeMascotObj.img;
+      const photoHtml = photoSrc 
+        ? `<img src="${photoSrc}" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />`
+        : `<div style="font-size: 2rem;">👤</div>`;
+
+      return `
+        <div class="admin-profile-card" style="background: #020617; border: 2px solid #38BDF8; border-radius: 18px; padding: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            ${photoHtml}
+            <div>
+              <div style="color: #FFF; font-weight: 800; font-size: 1.15rem; font-family: var(--font-heading);">${p.name}</div>
+              <div style="color: #94A3B8; font-size: 0.85rem;">
+                Nível ${p.level || 1} • ${p.coins || 0} Moedas 🪙 • ${p.gems || 0} Gemas 💎 • ${p.passwordHash ? '🔒 Com Senha' : '🔓 Sem Senha'}
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+            <button class="btn btn-3d btn-primary btn-admin-reset-pwd" data-id="${p.id}" data-name="${p.name}" style="padding: 8px 14px; font-size: 0.85rem;">
+              🔑 Redefinir Senha
+            </button>
+            <button class="btn btn-3d btn-success btn-admin-add-coins" data-id="${p.id}" style="padding: 8px 14px; font-size: 0.85rem;">
+              🪙 +100 Moedas
+            </button>
+            <button class="btn btn-3d btn-warning btn-admin-unlock-all" data-id="${p.id}" style="padding: 8px 14px; font-size: 0.85rem;">
+              🔓 Lib. Mascotes
+            </button>
+            <button class="btn btn-3d btn-danger btn-admin-delete-user" data-id="${p.id}" data-name="${p.name}" style="background: #DC2626 !important; border-color: #EF4444 !important; color: #FFF !important; padding: 8px 14px; font-size: 0.85rem;">
+              🗑️ Apagar Usuário
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.btn-admin-reset-pwd').forEach(btn => {
+      btn.onclick = async () => {
+        const pId = btn.getAttribute('data-id');
+        const pName = btn.getAttribute('data-name');
+        const newPwd = prompt(`Digite a nova senha para o perfil '${pName}':`);
+        if (newPwd !== null && newPwd.trim() !== '') {
+          const res = await this.game.adminResetPassword(pId, newPwd.trim());
+          alert(res.message);
+          this.renderAdminProfilesGrid();
+        }
+      };
+    });
+
+    container.querySelectorAll('.btn-admin-add-coins').forEach(btn => {
+      btn.onclick = () => {
+        const pId = btn.getAttribute('data-id');
+        if (this.game.adminGrantCoins(pId, 100)) {
+          soundManager.playSuccess();
+          this.updateHeaderStats();
+          this.renderAdminProfilesGrid();
+          alert('🪙 100 Moedas concedidas com sucesso!');
+        }
+      };
+    });
+
+    container.querySelectorAll('.btn-admin-unlock-all').forEach(btn => {
+      btn.onclick = () => {
+        const pId = btn.getAttribute('data-id');
+        if (this.game.adminUnlockAllMascots(pId)) {
+          soundManager.playFanfare();
+          this.updateHeaderStats();
+          this.renderAdminProfilesGrid();
+          alert('🔓 Todos os mascotes desbloqueados para o jogador!');
+        }
+      };
+    });
+
+    container.querySelectorAll('.btn-admin-delete-user').forEach(btn => {
+      btn.onclick = async () => {
+        const pId = btn.getAttribute('data-id');
+        const pName = btn.getAttribute('data-name');
+
+        if (confirm(`Tem certeza de que deseja apagar permanentemente o perfil do usuário '${pName}'? Esta ação não pode ser desfeita.`)) {
+          const res = await this.game.deleteProfile(pId);
+          alert(res.message || 'Perfil apagado!');
+          this.updateHeaderStats();
+          this.renderAdminProfilesGrid();
+        }
+      };
+    });
   }
 
   openProfileModal(options = {}) {
@@ -2243,6 +2445,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnHeaderPhotobooth) {
     btnHeaderPhotobooth.onclick = () => {
       ui.openPhotoBooth(game.getActiveMascot());
+    };
+  }
+
+  const btnHeaderAdmin = document.getElementById('btn-header-admin');
+  if (btnHeaderAdmin) {
+    btnHeaderAdmin.onclick = () => {
+      ui.openAdminPinModal();
+    };
+  }
+
+  const btnOpenAdmin = document.getElementById('btn-open-admin');
+  if (btnOpenAdmin) {
+    btnOpenAdmin.onclick = () => {
+      ui.openAdminPinModal();
     };
   }
 

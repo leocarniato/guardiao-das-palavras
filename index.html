@@ -63,6 +63,10 @@
         <div class="stat-pill bgm-toggle" id="btn-toggle-bgm" title="Música de Fundo">
           <span class="bgm-icon">🎵 BGM</span>
         </div>
+
+        <div class="stat-pill admin" id="btn-header-admin" title="Painel de Administração / Controle dos Pais" style="background: linear-gradient(135deg, #7C2D12, #C2410C) !important; border: 1.5px solid #FB923C !important; color: #FFF !important; font-weight: 800 !important; cursor: pointer !important;">
+          <span>⚙️ Painel ADM</span>
+        </div>
       </div>
     </header>
 
@@ -90,6 +94,9 @@
           </button>
           <button id="btn-open-parent" class="btn btn-3d btn-pink btn-large">
             👨‍👩‍👧 Painel dos Pais
+          </button>
+          <button id="btn-open-admin" class="btn btn-3d btn-warning btn-large" style="background: linear-gradient(135deg, #7C2D12, #C2410C) !important; border-color: #FB923C !important;">
+            ⚙️ Painel ADM
           </button>
         </div>
       </div>
@@ -393,6 +400,58 @@
         <button id="btn-close-gallery-modal" class="btn btn-3d btn-info">
           ❌ Fechar
         </button>
+      </div>
+  <!-- MODAL AUTENTICAÇÃO PIN DO ADMINISTRADOR (#admin-pin-modal) -->
+  <div id="admin-pin-modal" class="modal-overlay" style="z-index: 11500;">
+    <div class="modal-card admin-pin-card" style="max-width: 440px; background: #0F172A; border: 2.5px solid #FB923C;">
+      <h3 class="photobooth-title" style="color: #FB923C;">⚙️ Acesso ao Painel ADM</h3>
+      <p class="photobooth-desc">Digite o PIN Mestre do Administrador para acessar a área restrita.</p>
+
+      <div style="margin: 18px 0; position: relative;">
+        <input type="password" id="input-admin-pin" placeholder="Digite o PIN (Padrão: 1234)..." maxlength="10" style="width: 100%; background: #020617; border: 2px solid #FB923C; border-radius: 14px; padding: 12px 16px; color: #FFF; font-size: 1.3rem; text-align: center; font-family: var(--font-heading);" />
+        <p id="admin-pin-error" style="color: #EF4444; font-size: 0.95rem; margin-top: 10px; display: none; font-weight: 700; text-align: center; font-family: var(--font-body);">❌ PIN incorreto! O PIN padrão é 1234.</p>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button id="btn-confirm-admin-pin" class="btn btn-3d btn-warning" style="flex: 1; background: linear-gradient(135deg, #7C2D12, #C2410C) !important; border-color: #FB923C !important;">
+          🔓 Entrar no ADM
+        </button>
+        <button id="btn-cancel-admin-pin" class="btn btn-3d btn-info" style="flex: 1;">
+          ❌ Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PAINEL DO ADMINISTRADOR (#admin-modal) -->
+  <div id="admin-modal" class="modal-overlay" style="z-index: 12000;">
+    <div class="modal-card admin-card-modal" style="max-width: 860px !important; width: 94vw !important; padding: 24px !important; background: #0F172A !important; border: 2.5px solid #FB923C !important;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 class="photobooth-title" style="color: #FB923C; margin: 0; font-size: 1.6rem;">⚙️ Painel do Administrador (ADM)</h3>
+        <button id="btn-close-admin-modal" class="btn btn-3d btn-info" style="padding: 6px 14px;">❌ Fechar</button>
+      </div>
+
+      <p class="photobooth-desc" style="color: #94A3B8; margin-bottom: 16px;">
+        Gerenciamento total de perfis: Redefinia senhas diretamente, exclua perfis ou conceda moedas de bônus!
+      </p>
+
+      <!-- Lista de Perfis no Painel ADM -->
+      <div id="admin-profiles-grid" style="display: flex; flex-direction: column; gap: 14px; max-height: 420px; overflow-y: auto; padding-right: 6px; margin-bottom: 20px;">
+        <!-- Injetado dinamicamente via JS -->
+      </div>
+
+      <!-- Trocar PIN Mestre do Administrador -->
+      <div style="background: #020617; border: 1.5px solid rgba(251, 146, 60, 0.4); border-radius: 16px; padding: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+        <div>
+          <span style="color: #FB923C; font-weight: 800; font-family: var(--font-heading); font-size: 0.95rem;">👨‍👩‍👧 ALTERAR PIN MESTRE DO ADMINISTRADOR:</span>
+          <p style="color: #94A3B8; font-size: 0.85rem; margin-top: 2px;">Altere o PIN padrão (1234) para um novo código secreto da sua preferência.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <input type="password" id="input-admin-new-pin" placeholder="Novo PIN..." maxlength="10" style="width: 130px; background: #0F172A; border: 1.5px solid #38BDF8; border-radius: 10px; padding: 8px 12px; color: #FFF; font-weight: 800; text-align: center;" />
+          <button id="btn-admin-change-pin" class="btn btn-3d btn-warning" style="padding: 8px 14px; font-size: 0.9rem;">
+            💾 Salvar Novo PIN
+          </button>
+        </div>
       </div>
     </div>
   </div>

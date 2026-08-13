@@ -814,6 +814,166 @@ export class UIController {
     });
   }
 
+  openAdminPinModal() {
+    const pinModal = document.getElementById('admin-pin-modal');
+    if (!pinModal) return;
+
+    const inputPin = document.getElementById('input-admin-pin');
+    const btnConfirm = document.getElementById('btn-confirm-admin-pin');
+    const btnCancel = document.getElementById('btn-cancel-admin-pin');
+    const errorMsg = document.getElementById('admin-pin-error');
+
+    if (inputPin) inputPin.value = '';
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    if (btnCancel) {
+      btnCancel.onclick = () => pinModal.classList.remove('active');
+    }
+
+    if (btnConfirm && inputPin) {
+      btnConfirm.onclick = () => {
+        const pin = inputPin.value.trim();
+        if (this.game.adminVerifyMasterPin(pin)) {
+          pinModal.classList.remove('active');
+          soundManager.playFanfare();
+          this.openAdminModal();
+        } else {
+          if (errorMsg) errorMsg.style.display = 'block';
+          soundManager.playError();
+        }
+      };
+    }
+
+    pinModal.classList.add('active');
+  }
+
+  openAdminModal() {
+    const adminModal = document.getElementById('admin-modal');
+    if (!adminModal) return;
+
+    this.renderAdminProfilesGrid();
+
+    const btnClose = document.getElementById('btn-close-admin-modal');
+    if (btnClose) {
+      btnClose.onclick = () => adminModal.classList.remove('active');
+    }
+
+    const inputNewPin = document.getElementById('input-admin-new-pin');
+    const btnChangePin = document.getElementById('btn-admin-change-pin');
+    if (btnChangePin && inputNewPin) {
+      btnChangePin.onclick = () => {
+        const newPin = inputNewPin.value.trim();
+        const res = this.game.adminSetMasterPin(newPin);
+        alert(res.message);
+        if (res.success) {
+          inputNewPin.value = '';
+        }
+      };
+    }
+
+    adminModal.classList.add('active');
+  }
+
+  renderAdminProfilesGrid() {
+    const container = document.getElementById('admin-profiles-grid');
+    if (!container) return;
+
+    const profiles = this.game.getProfiles();
+
+    if (profiles.length === 0) {
+      container.innerHTML = `<div style="color: #94A3B8; text-align: center; padding: 20px;">Nenhum usuário cadastrado.</div>`;
+      return;
+    }
+
+    container.innerHTML = profiles.map(p => {
+      const activeMascotObj = this.game.getMascots().find(m => m.id === (p.activeMascot || 'aranha')) || {};
+      const photoSrc = p.customProfilePhoto || p.profilePhoto || activeMascotObj.img;
+      const photoHtml = photoSrc 
+        ? `<img src="${photoSrc}" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />`
+        : `<div style="font-size: 2rem;">👤</div>`;
+
+      return `
+        <div class="admin-profile-card" style="background: #020617; border: 2px solid #38BDF8; border-radius: 18px; padding: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            ${photoHtml}
+            <div>
+              <div style="color: #FFF; font-weight: 800; font-size: 1.15rem; font-family: var(--font-heading);">${p.name}</div>
+              <div style="color: #94A3B8; font-size: 0.85rem;">
+                Nível ${p.level || 1} • ${p.coins || 0} Moedas 🪙 • ${p.gems || 0} Gemas 💎 • ${p.passwordHash ? '🔒 Com Senha' : '🔓 Sem Senha'}
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+            <button class="btn btn-3d btn-primary btn-admin-reset-pwd" data-id="${p.id}" data-name="${p.name}" style="padding: 8px 14px; font-size: 0.85rem;">
+              🔑 Redefinir Senha
+            </button>
+            <button class="btn btn-3d btn-success btn-admin-add-coins" data-id="${p.id}" style="padding: 8px 14px; font-size: 0.85rem;">
+              🪙 +100 Moedas
+            </button>
+            <button class="btn btn-3d btn-warning btn-admin-unlock-all" data-id="${p.id}" style="padding: 8px 14px; font-size: 0.85rem;">
+              🔓 Lib. Mascotes
+            </button>
+            <button class="btn btn-3d btn-danger btn-admin-delete-user" data-id="${p.id}" data-name="${p.name}" style="background: #DC2626 !important; border-color: #EF4444 !important; color: #FFF !important; padding: 8px 14px; font-size: 0.85rem;">
+              🗑️ Apagar Usuário
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.btn-admin-reset-pwd').forEach(btn => {
+      btn.onclick = async () => {
+        const pId = btn.getAttribute('data-id');
+        const pName = btn.getAttribute('data-name');
+        const newPwd = prompt(`Digite a nova senha para o perfil '${pName}':`);
+        if (newPwd !== null && newPwd.trim() !== '') {
+          const res = await this.game.adminResetPassword(pId, newPwd.trim());
+          alert(res.message);
+          this.renderAdminProfilesGrid();
+        }
+      };
+    });
+
+    container.querySelectorAll('.btn-admin-add-coins').forEach(btn => {
+      btn.onclick = () => {
+        const pId = btn.getAttribute('data-id');
+        if (this.game.adminGrantCoins(pId, 100)) {
+          soundManager.playSuccess();
+          this.updateHeaderStats();
+          this.renderAdminProfilesGrid();
+          alert('🪙 100 Moedas concedidas com sucesso!');
+        }
+      };
+    });
+
+    container.querySelectorAll('.btn-admin-unlock-all').forEach(btn => {
+      btn.onclick = () => {
+        const pId = btn.getAttribute('data-id');
+        if (this.game.adminUnlockAllMascots(pId)) {
+          soundManager.playFanfare();
+          this.updateHeaderStats();
+          this.renderAdminProfilesGrid();
+          alert('🔓 Todos os mascotes desbloqueados para o jogador!');
+        }
+      };
+    });
+
+    container.querySelectorAll('.btn-admin-delete-user').forEach(btn => {
+      btn.onclick = async () => {
+        const pId = btn.getAttribute('data-id');
+        const pName = btn.getAttribute('data-name');
+
+        if (confirm(`Tem certeza de que deseja apagar permanentemente o perfil do usuário '${pName}'? Esta ação não pode ser desfeita.`)) {
+          const res = await this.game.deleteProfile(pId);
+          alert(res.message || 'Perfil apagado!');
+          this.updateHeaderStats();
+          this.renderAdminProfilesGrid();
+        }
+      };
+    });
+  }
+
   // Efeito de Confetes no Canvas HTML5
   triggerConfetti(count = 50) {
     if (!this.ctx || !this.canvas) return;

@@ -447,6 +447,58 @@ export class GameEngine {
     return true;
   }
 
+  adminVerifyMasterPin(pinInput) {
+    const currentPin = this.profilesData.masterPin || '1234';
+    return (pinInput && pinInput.trim() === currentPin);
+  }
+
+  adminSetMasterPin(newPin) {
+    if (!newPin || newPin.trim().length < 4) {
+      return { success: false, message: 'O PIN Mestre deve ter pelo menos 4 dígitos!' };
+    }
+    this.profilesData.masterPin = newPin.trim();
+    this.savePlayerData();
+    return { success: true, message: 'PIN Mestre do Administrador atualizado com sucesso!' };
+  }
+
+  async adminResetPassword(profileId, newPassword) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return { success: false, message: 'Perfil não encontrado!' };
+
+    const newHash = await this.hashPassword(newPassword);
+    profile.passwordHash = newHash;
+    this.savePlayerData();
+
+    try {
+      fetch('/api/profiles/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: profileId, newPassword })
+      }).catch(() => {});
+    } catch (e) {}
+
+    return { success: true, message: `Senha do perfil '${profile.name}' redefinida com sucesso!` };
+  }
+
+  adminGrantCoins(profileId, amount = 100) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+
+    profile.coins = (profile.coins || 0) + amount;
+    this.savePlayerData();
+    return true;
+  }
+
+  adminUnlockAllMascots(profileId) {
+    const profile = this.profilesData.profiles[profileId];
+    if (!profile) return false;
+
+    const allMascotIds = MASCOTS.map(m => m.id);
+    profile.unlockedMascots = [...allMascotIds];
+    this.savePlayerData();
+    return true;
+  }
+
   async deleteProfile(profileId) {
     const keys = Object.keys(this.profilesData.profiles);
     if (keys.length <= 1) {
@@ -467,7 +519,7 @@ export class GameEngine {
       this.playerData = this.profilesData.profiles[this.activeProfileId];
     }
     this.savePlayerData();
-    return { success: true };
+    return { success: true, message: 'Perfil excluído com sucesso!' };
   }
 
   saveProfilePhoto(photoBase64) {
