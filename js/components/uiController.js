@@ -17,6 +17,57 @@ export class UIController {
     this.initCanvasResize();
   }
 
+  // Exibe um Pop-up / Toast de Alerta Customizado, Bonito e Animado na Tela
+  showToast(message, type = 'info', duration = 3500) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `custom-toast toast-${type}`;
+
+    let icon = '⚡';
+    if (type === 'warning' || type === 'coins') icon = '🪙';
+    else if (type === 'error') icon = '❌';
+    else if (type === 'success') icon = '🎉';
+    else if (type === 'info') icon = '💡';
+
+    toast.innerHTML = `
+      <span class="toast-icon">${icon}</span>
+      <span class="toast-message">${message}</span>
+      <button class="toast-close-btn">&times;</button>
+    `;
+
+    const closeBtn = toast.querySelector('.toast-close-btn');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        toast.classList.add('toast-dismiss');
+        setTimeout(() => toast.remove(), 300);
+      };
+    }
+
+    container.appendChild(toast);
+
+    if (type === 'error' || type === 'warning' || type === 'coins') {
+      soundManager.playWrong();
+    } else if (type === 'success') {
+      soundManager.playFanfare();
+    } else {
+      soundManager.playClick();
+    }
+
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.classList.add('toast-dismiss');
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, duration);
+  }
+
   // Redimensiona o canvas de confetes para tela cheia
   initCanvasResize() {
     if (!this.canvas) return;
@@ -607,18 +658,27 @@ export class UIController {
     containerEl.querySelectorAll('.btn-buy-mascot').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
+        const mascotObj = this.game.getMascots().find(m => m.id === id);
+
+        if (mascotObj && !mascotObj.canAfford) {
+          this.showToast(`🪙 Moedas insuficientes! Você precisa de ${mascotObj.price} moedas para desbloquear o ${mascotObj.name}.`, 'coins');
+          return;
+        }
+
         const res = this.game.buyMascot(id);
         if (res.success) {
           soundManager.playFanfare();
           this.triggerConfetti(80);
           this.renderShop(containerEl);
           this.updateHeaderStats();
+          this.showToast(`🎉 ${mascotObj ? mascotObj.name : 'Mascote'} desbloqueado com sucesso!`, 'success');
 
           // Abre o Photo Booth de WebCam para comemorar a compra!
-          const mascotObj = this.game.getMascots().find(m => m.id === id);
           if (mascotObj) {
             setTimeout(() => this.openPhotoBooth(mascotObj), 600);
           }
+        } else {
+          this.showToast(`🪙 ${res.message || 'Moedas insuficientes!'}`, 'coins');
         }
       });
     });
@@ -660,10 +720,10 @@ export class UIController {
         })
         .catch(err => {
           console.warn('Erro ao acessar webcam USB:', err);
-          alert('Não foi possível conectar com a câmera USB. Verifique se ela está conectada e se você deu permissão no navegador!');
+          this.showToast('📷 Permita o acesso à câmera no navegador para tirar fotos!', 'warning');
         });
     } else {
-      alert('Seu navegador não suporta acesso à câmera.');
+      this.showToast('⚠️ Seu navegador não suporta acesso à câmera.', 'warning');
     }
 
     if (btnSnap) {
@@ -940,7 +1000,7 @@ export class UIController {
         const newPwd = prompt(`Digite a nova senha para o perfil '${pName}':`);
         if (newPwd !== null && newPwd.trim() !== '') {
           const res = await this.game.adminResetPassword(pId, newPwd.trim());
-          alert(res.message);
+          this.showToast(res.message, res.success ? 'success' : 'error');
           this.renderAdminProfilesGrid();
         }
       };
@@ -953,7 +1013,7 @@ export class UIController {
           soundManager.playSuccess();
           this.updateHeaderStats();
           this.renderAdminProfilesGrid();
-          alert('🪙 100 Moedas concedidas com sucesso!');
+          this.showToast('🪙 100 Moedas concedidas com sucesso!', 'coins');
         }
       };
     });
@@ -965,7 +1025,7 @@ export class UIController {
           soundManager.playFanfare();
           this.updateHeaderStats();
           this.renderAdminProfilesGrid();
-          alert('🔓 Todos os mascotes desbloqueados para o jogador!');
+          this.showToast('🔓 Todos os mascotes desbloqueados para o jogador!', 'success');
         }
       };
     });
@@ -977,7 +1037,7 @@ export class UIController {
 
         if (confirm(`Tem certeza de que deseja apagar permanentemente o perfil do usuário '${pName}'? Esta ação não pode ser desfeita.`)) {
           const res = await this.game.deleteProfile(pId);
-          alert(res.message || 'Perfil apagado!');
+          this.showToast(res.message || 'Perfil apagado!', 'info');
           this.updateHeaderStats();
           this.renderAdminProfilesGrid();
         }
@@ -1083,13 +1143,13 @@ export class UIController {
         const hint = inputHint ? inputHint.value.trim() : '';
 
         if (!name) {
-          alert('Por favor, digite um nome para o novo perfil.');
+          this.showToast('👤 Por favor, digite um nome para o novo perfil.', 'warning');
           inputName.focus();
           return;
         }
 
         if (!password) {
-          alert('Por favor, crie uma senha para proteger o seu perfil!');
+          this.showToast('🔒 Por favor, crie uma senha para proteger o seu perfil!', 'warning');
           inputPassword.focus();
           return;
         }
@@ -1104,7 +1164,7 @@ export class UIController {
         this.updateHeaderStats();
         this.renderProfilesList();
         modal.classList.remove('active');
-        alert(`🎉 Perfil do ${name} criado e protegido por senha com sucesso! Boa sorte!`);
+        this.showToast(`🎉 Perfil do ${name} criado e protegido por senha com sucesso! Boa sorte!`, 'success');
       };
     }
 
@@ -1163,7 +1223,7 @@ export class UIController {
           this.updateHeaderStats();
           const modal = document.getElementById('profile-modal');
           if (modal) modal.classList.remove('active');
-          alert(`⚡ Perfil alterado para ${this.game.playerData.name}!`);
+          this.showToast(`⚡ Perfil alterado para ${this.game.playerData ? this.game.playerData.name : 'Jogador'}!`, 'info');
         });
       };
     });
@@ -1179,7 +1239,7 @@ export class UIController {
           if (!inputPwd) return;
           const isOk = await this.game.verifyPassword(id, inputPwd);
           if (!isOk) {
-            alert('❌ Senha incorreta! O perfil não foi excluído.');
+            this.showToast('❌ Senha incorreta! O perfil não foi excluído.', 'error');
             return;
           }
         } else {
@@ -1191,7 +1251,7 @@ export class UIController {
         this.game.deleteProfile(id);
         this.updateHeaderStats();
         this.renderProfilesList();
-        alert(`🗑️ Perfil de ${targetProfile.name} excluído.`);
+        this.showToast(`🗑️ Perfil de ${targetProfile.name} excluído.`, 'info');
       };
     });
   }
@@ -1333,7 +1393,7 @@ export class UIController {
         const newPwd = inputNewPwd.value.trim();
 
         if (!newPwd) {
-          alert('Por favor, digite a nova senha!');
+          this.showToast('🔑 Por favor, digite a nova senha!', 'warning');
           inputNewPwd.focus();
           return;
         }
@@ -1346,7 +1406,7 @@ export class UIController {
           soundManager.playFanfare();
           this.triggerConfetti(40);
           this.updateHeaderStats();
-          alert(`🎉 Senha do perfil ${profile.name} redefinida com sucesso!`);
+          this.showToast(`🎉 Senha do perfil ${profile.name} redefinida com sucesso!`, 'success');
           if (onSuccess) onSuccess();
         } else {
           if (errorMsg) {
@@ -1428,7 +1488,7 @@ export class UIController {
           soundManager.playCorrect();
           this.updateHeaderStats();
           this.renderGalleryList();
-          alert('🎉 Foto de perfil atualizada com sucesso!');
+          this.showToast('🎉 Foto de perfil atualizada com sucesso!', 'success');
         }
       };
     });
@@ -1449,6 +1509,7 @@ export class UIController {
           this.game.deleteGalleryPhoto(id);
           this.updateHeaderStats();
           this.renderGalleryList();
+          this.showToast('🗑️ Foto excluída da galeria.', 'info');
         }
       };
     });
@@ -1525,7 +1586,7 @@ export class UIController {
             }
             soundManager.playClick();
           } else {
-            alert('Todas as 4 lacunas já foram preenchidas! Clique em "🚀 Validar Respostas"!');
+            this.showToast('⚡ Todas as 4 lacunas foram preenchidas! Clique em "🚀 Validar Respostas"!', 'info');
           }
         };
       });
@@ -1539,11 +1600,11 @@ export class UIController {
           soundManager.playFanfare();
           this.triggerConfetti(90);
           this.updateHeaderStats();
-          alert(`🎉 PARABÉNS! Você venceu a Batalha de Puzzles!\n\nGanhou +${res.coinsEarned} 🪙 Moedas & +${res.gemsEarned} 💎 Gema Secreta!`);
+          this.showToast(`🎉 PARABÉNS! Venceu a Batalha de Puzzles! +${res.coinsEarned} 🪙 Moedas & +${res.gemsEarned} 💎 Gemas!`, 'success');
           this.renderMatrixGame();
         } else {
           soundManager.playWrong();
-          alert(`Você acertou ${res.correctCount} de ${res.total} palavras. Tente novamente!`);
+          this.showToast(`Você acertou ${res.correctCount} de ${res.total} palavras. Tente novamente!`, 'warning');
         }
       };
     }
