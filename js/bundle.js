@@ -1164,18 +1164,45 @@ class GameEngine {
     this.streak = 0;
   }
 
+  async fetchAdminPin() {
+    if (window.location.protocol.startsWith('http')) {
+      try {
+        const res = await fetch('/api/admin/get-pin');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.pin) {
+            this.profilesData.masterPin = data.pin;
+            this.savePlayerData();
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
   adminVerifyMasterPin(pinInput) {
     const currentPin = this.profilesData.masterPin || '1234';
     return (pinInput && pinInput.trim() === currentPin);
   }
 
-  adminSetMasterPin(newPin) {
+  async adminSetMasterPin(newPin) {
     if (!newPin || newPin.trim().length < 4) {
       return { success: false, message: 'O PIN Mestre deve ter pelo menos 4 dígitos!' };
     }
-    this.profilesData.masterPin = newPin.trim();
+    const trimmedPin = newPin.trim();
+    this.profilesData.masterPin = trimmedPin;
     this.savePlayerData();
-    return { success: true, message: 'PIN Mestre do Administrador atualizado com sucesso!' };
+
+    if (window.location.protocol.startsWith('http')) {
+      try {
+        await fetch('/api/admin/set-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: trimmedPin })
+        });
+      } catch (e) {}
+    }
+
+    return { success: true, message: 'PIN Mestre do Administrador salvo com sucesso no banco de dados!' };
   }
 
   async adminResetPassword(profileId, newPassword) {
@@ -3067,6 +3094,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   ui.updateHeaderStats();
+  game.fetchAdminPin();
   game.fetchDbProfiles().then(() => {
     ui.updateHeaderStats();
     if (!game.hasActiveProfile()) {

@@ -46,8 +46,16 @@ def init_db():
             is_correct INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        );
     ''')
     conn.commit()
+    
+    # Se o PIN Mestre não existir, define '1234'
+    cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('master_pin', '1234')")
     
     # Se a tabela estiver vazia, cria o perfil inicial 'pedro'
     cursor.execute("SELECT COUNT(*) as count FROM profiles")
@@ -341,6 +349,37 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 return
             except Exception as e:
                 print("Erro ao excluir perfil no SQLite:", e)
+                self.send_json({'success': False, 'message': str(e)}, 500)
+                return
+
+        elif parsed.path == '/api/admin/get-pin':
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT value FROM settings WHERE key = 'master_pin'")
+                row = cursor.fetchone()
+                conn.close()
+                pin = row['value'] if row else '1234'
+                self.send_json({'success': True, 'pin': pin})
+                return
+            except Exception as e:
+                self.send_json({'success': False, 'pin': '1234'})
+                return
+
+        elif parsed.path == '/api/admin/set-pin':
+            new_pin = (payload.get('pin') or '').strip()
+            if not new_pin or len(new_pin) < 4:
+                self.send_json({'success': False, 'message': 'PIN Mestre inválido'}, 400)
+                return
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('master_pin', ?)", (new_pin,))
+                conn.commit()
+                conn.close()
+                self.send_json({'success': True, 'message': 'PIN Mestre atualizado com sucesso no banco!'})
+                return
+            except Exception as e:
                 self.send_json({'success': False, 'message': str(e)}, 500)
                 return
 
