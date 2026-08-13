@@ -1,6 +1,6 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * Garante que o jogo funcione perfeitamente tanto por servidor web quanto dando duplo clique no index.html.
+ * Garante que o jogo e o Estúdio de Fotos com WebCam funcionem perfeitamente.
  */
 
 // 1. DADOS DE PERGUNTAS E CATEGORIAS
@@ -598,7 +598,6 @@ class GameEngine {
       ? this.profilesData.profiles[this.activeProfileId]
       : null;
 
-    // Se ainda não existir perfil ativo, pega o primeiro perfil disponível ou cria o perfil inicial 'Pedro'
     if (!this.playerData) {
       const existingProfiles = Object.values(this.profilesData.profiles || {});
       if (existingProfiles.length > 0) {
@@ -616,7 +615,6 @@ class GameEngine {
       }
     }
 
-    // Estado da partida atual
     this.currentCategory = null;
     this.currentQuestions = [];
     this.currentQuestionIndex = 0;
@@ -1136,6 +1134,8 @@ class UIController {
     this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
     this.particles = [];
     this.animationId = null;
+    this.webcamStream = null;
+    this.lastCapturedPhoto = null;
 
     this.initCanvasResize();
   }
@@ -1188,6 +1188,7 @@ class UIController {
         userPhotoEl.style.height = '42px';
         userPhotoEl.style.borderRadius = '50%';
         userPhotoEl.style.objectFit = 'cover';
+        userPhotoEl.style.border = '2px solid #34D399';
         userPhotoEl.style.display = 'inline-block';
       } else {
         userPhotoEl.style.display = 'none';
@@ -1554,7 +1555,7 @@ class UIController {
           if (res.isAllCorrect) {
             this.triggerConfetti(60);
             this.updateHeaderStats();
-            alert(`🎉 EXCELENTE! Você acertou todas as frases do Puzzle!\n+${res.coinsEarned} Moedas 🪙 | +${res.gemsEarned} Gema Secret 💎`);
+            alert(`🎉 EXCELENTE! Você acertou todas as frases do Puzzle!\n+${res.coinsEarned} Moedas 🪙 | +${res.gemsEarned} Gema Secreta 💎`);
             this.showScreen('menu-screen');
           } else {
             alert(`Quase lá! Você acertou ${res.correctCount} de ${res.totalCount} frases. Tente novamente!`);
@@ -1576,19 +1577,26 @@ class UIController {
         <h4 style="font-family: 'Orbitron', sans-serif !important; color: #FFF !important; font-size: 1.1rem !important; font-weight: 800 !important;">${m.icon} ${m.name}</h4>
         <p style="color: #94A3B8 !important; font-size: 0.9rem !important; line-height: 1.4 !important; flex: 1 !important;">${m.description}</p>
         
-        ${m.active ? `
-          <button class="btn btn-3d btn-success btn-block" disabled style="opacity: 0.8 !important;">
-            ✅ EQUIPADO
-          </button>
-        ` : m.unlocked ? `
-          <button class="btn btn-3d btn-primary btn-block select-mascot-btn" data-id="${m.id}">
-            ⚡ EQUIPAR MASCOTE
-          </button>
-        ` : `
-          <button class="btn btn-3d btn-warning btn-block buy-mascot-btn" data-id="${m.id}">
-            🛒 COMPRAR (${m.price} 🪙)
-          </button>
-        `}
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+          ${m.active ? `
+            <button class="btn btn-3d btn-success btn-block" disabled style="opacity: 0.8 !important;">
+              ✅ EQUIPADO
+            </button>
+          ` : m.unlocked ? `
+            <button class="btn btn-3d btn-primary btn-block select-mascot-btn" data-id="${m.id}">
+              ⚡ EQUIPAR MASCOTE
+            </button>
+          ` : `
+            <button class="btn btn-3d btn-warning btn-block buy-mascot-btn" data-id="${m.id}">
+              🛒 COMPRAR (${m.price} 🪙)
+            </button>
+          `}
+          ${m.unlocked ? `
+            <button class="btn btn-3d btn-info btn-block photo-mascot-btn" data-id="${m.id}">
+              📸 TIRAR FOTO COM MASCOTE
+            </button>
+          ` : ''}
+        </div>
       </div>
     `).join('');
 
@@ -1613,9 +1621,173 @@ class UIController {
           this.renderShop(containerEl);
           soundManager.playFanfare();
           this.triggerConfetti(40);
+          const mascotObj = this.game.getMascots().find(m => m.id === mascotId);
+          if (mascotObj) {
+            setTimeout(() => this.openPhotoBooth(mascotObj), 600);
+          }
         }
       };
     });
+
+    containerEl.querySelectorAll('.photo-mascot-btn').forEach(btn => {
+      btn.onclick = () => {
+        const mascotId = btn.getAttribute('data-id');
+        const mascotObj = this.game.getMascots().find(m => m.id === mascotId);
+        if (mascotObj) {
+          this.openPhotoBooth(mascotObj);
+        }
+      };
+    });
+  }
+
+  // Estúdio de Foto com WebCam USB
+  openPhotoBooth(mascot) {
+    const modal = document.getElementById('photobooth-modal');
+    if (!modal) return;
+
+    const videoEl = document.getElementById('webcam-video');
+    const mascotImgEl = document.getElementById('photobooth-mascot-img');
+    const mascotNameEl = document.getElementById('photobooth-mascot-name');
+    const countdownEl = document.getElementById('photobooth-countdown');
+    const btnSnap = document.getElementById('btn-snap-photo');
+    const btnClose = document.getElementById('btn-close-photobooth');
+
+    if (mascotImgEl) mascotImgEl.src = mascot.img || '';
+    if (mascotNameEl) mascotNameEl.textContent = mascot.name || '';
+    if (countdownEl) countdownEl.style.display = 'none';
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+        .then(stream => {
+          this.webcamStream = stream;
+          if (videoEl) videoEl.srcObject = stream;
+        })
+        .catch(err => {
+          console.warn('Erro ao acessar webcam USB:', err);
+          alert('Não foi possível conectar com a câmera USB. Verifique se ela está conectada e se você deu permissão no navegador!');
+        });
+    } else {
+      alert('Seu navegador não suporta acesso à câmera.');
+    }
+
+    if (btnSnap) {
+      btnSnap.onclick = () => {
+        btnSnap.disabled = true;
+        let count = 3;
+        if (countdownEl) {
+          countdownEl.style.display = 'flex';
+          countdownEl.textContent = count;
+        }
+
+        const timer = setInterval(() => {
+          count--;
+          if (count > 0) {
+            if (countdownEl) countdownEl.textContent = count;
+            soundManager.playClick();
+          } else {
+            clearInterval(timer);
+            if (countdownEl) countdownEl.textContent = '📸';
+            soundManager.playSuccess();
+            
+            this.capturePhoto(mascot, () => {
+              btnSnap.disabled = false;
+              if (countdownEl) countdownEl.style.display = 'none';
+              this.closePhotoBooth();
+            });
+          }
+        }, 1000);
+      };
+    }
+
+    const btnDownload = document.getElementById('btn-download-last-photo');
+    if (btnDownload) {
+      btnDownload.onclick = () => {
+        if (this.lastCapturedPhoto) {
+          this.downloadDataUrl(this.lastCapturedPhoto, `foto_mascote_${mascot.id}.png`);
+        } else if (this.game.playerData && this.game.playerData.profilePhoto) {
+          this.downloadDataUrl(this.game.playerData.profilePhoto, `foto_perfil_${this.game.playerData.name}.png`);
+        } else {
+          alert('Tire uma foto primeiro para poder baixar!');
+        }
+      };
+    }
+
+    if (btnClose) {
+      btnClose.onclick = () => this.closePhotoBooth();
+    }
+
+    modal.classList.add('active');
+  }
+
+  closePhotoBooth() {
+    const modal = document.getElementById('photobooth-modal');
+    if (modal) modal.classList.remove('active');
+    if (this.webcamStream) {
+      this.webcamStream.getTracks().forEach(track => track.stop());
+      this.webcamStream = null;
+    }
+  }
+
+  downloadDataUrl(dataUrl, filename = 'minha_foto_mascote.png') {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  capturePhoto(mascot, onDone) {
+    const videoEl = document.getElementById('webcam-video');
+    const canvas = document.getElementById('photobooth-canvas');
+    if (!videoEl || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = 640;
+    canvas.height = 360;
+
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(320, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(videoEl, 0, 0, 320, 320);
+    ctx.restore();
+
+    ctx.fillStyle = mascot.neonColor || '#38BDF8';
+    ctx.fillRect(318, 0, 4, 320);
+
+    const mascotImg = new Image();
+    mascotImg.crossOrigin = 'anonymous';
+    mascotImg.src = mascot.img;
+
+    mascotImg.onload = () => {
+      ctx.drawImage(mascotImg, 320, 0, 320, 320);
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      ctx.fillRect(0, 320, 640, 40);
+
+      ctx.fillStyle = mascot.neonColor || '#38BDF8';
+      ctx.font = 'bold 16px Nunito, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`⚡ ${mascot.name} & Guardião da Ortografia!`, 320, 346);
+
+      const photoBase64 = canvas.toDataURL('image/png');
+      this.lastCapturedPhoto = photoBase64;
+      this.game.saveProfilePhoto(photoBase64);
+      this.updateHeaderStats();
+      soundManager.playFanfare();
+      this.triggerConfetti(60);
+      if (onDone) onDone();
+    };
+
+    mascotImg.onerror = () => {
+      const photoBase64 = canvas.toDataURL('image/png');
+      this.game.saveProfilePhoto(photoBase64);
+      this.updateHeaderStats();
+      if (onDone) onDone();
+    };
   }
 
   renderParentPanel(containerEl) {
@@ -1699,7 +1871,7 @@ class UIController {
       const mascot = (this.game.getMascots().find(m => m.id === (p.activeMascot || 'aranha'))) || {};
       
       const photoHtml = p.profilePhoto 
-        ? `<img class="profile-card-photo" src="${p.profilePhoto}" alt="${p.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />`
+        ? `<img class="profile-card-photo" src="${p.profilePhoto}" alt="${p.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #34D399;" />`
         : `<div class="profile-card-avatar-badge" style="font-size: 2rem;">${mascot.icon || '👤'}</div>`;
 
       return `
@@ -1917,6 +2089,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnHeaderGallery) {
     btnHeaderGallery.onclick = () => {
       ui.openGalleryModal();
+    };
+  }
+
+  const btnHeaderPhotobooth = document.getElementById('btn-header-photobooth');
+  if (btnHeaderPhotobooth) {
+    btnHeaderPhotobooth.onclick = () => {
+      ui.openPhotoBooth(game.getActiveMascot());
     };
   }
 

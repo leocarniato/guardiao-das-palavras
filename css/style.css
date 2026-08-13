@@ -182,6 +182,13 @@ body {
   background: rgba(168, 85, 247, 0.15);
 }
 
+.stat-pill.photobooth {
+  cursor: pointer;
+  color: #38BDF8;
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.15);
+}
+
 .stat-pill.mascot {
   cursor: pointer;
   color: #F472B6;
@@ -251,23 +258,30 @@ body {
 }
 
 .hero-mascot-container {
-  position: relative;
-  font-size: 5rem;
-  margin-bottom: 16px;
+  position: relative !important;
+  width: 140px !important;
+  height: 140px !important;
+  margin: 0 auto 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   animation: floatMascot 3s ease-in-out infinite;
   filter: drop-shadow(0 0 25px var(--neon-glow, #38BDF8));
 }
 
 .hero-mascot-real-img {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: center top;
-  border: 3px solid var(--neon-glow, #38BDF8);
-  box-shadow: 0 0 30px var(--neon-glow, rgba(56,189,248,0.6));
-  display: inline-block;
-  vertical-align: middle;
+  width: 140px !important;
+  height: 140px !important;
+  min-width: 140px !important;
+  min-height: 140px !important;
+  max-width: 140px !important;
+  max-height: 140px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+  border: 3px solid var(--neon-glow, #38BDF8) !important;
+  box-shadow: 0 0 30px var(--neon-glow, rgba(56,189,248,0.6)) !important;
+  display: block !important;
 }
 
 .hero-title {
@@ -526,8 +540,31 @@ body {
 }
 
 .game-mascot-avatar {
-  font-size: 2.5rem !important;
+  width: 70px !important;
+  height: 70px !important;
+  min-width: 70px !important;
+  min-height: 70px !important;
+  max-width: 70px !important;
+  max-height: 70px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
   flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 2.5px solid var(--neon-glow, #38BDF8) !important;
+  box-shadow: 0 0 16px var(--neon-glow, rgba(56,189,248,0.5)) !important;
+  background: #020617 !important;
+  font-size: 2.5rem !important;
+}
+
+.game-mascot-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+  border-radius: 50% !important;
+  display: block !important;
 }
 
 .game-mascot-bubble {
