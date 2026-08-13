@@ -739,11 +739,22 @@ export class UIController {
     ctx.fillStyle = '#020617';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Metade Esquerda (0 a 320): Vídeo da Câmera Espelhado
+    // Metade Esquerda (0 a 320): Vídeo da Câmera Espelhado e Centralizado Proporcionalmente
+    const vW = videoEl.videoWidth || 640;
+    const vH = videoEl.videoHeight || 480;
+    let srcW = vW, srcH = vH, srcX = 0, srcY = 0;
+    if (vW > vH) {
+      srcW = vH;
+      srcX = (vW - vH) / 2;
+    } else if (vH > vW) {
+      srcH = vW;
+      srcY = (vH - vW) / 2;
+    }
+
     ctx.save();
     ctx.translate(320, 0);
     ctx.scale(-1, 1);
-    ctx.drawImage(videoEl, 0, 0, 320, 320);
+    ctx.drawImage(videoEl, srcX, srcY, srcW, srcH, 0, 0, 320, 320);
     ctx.restore();
 
     // Divisor Neon Central
