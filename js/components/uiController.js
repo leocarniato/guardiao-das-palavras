@@ -341,15 +341,15 @@ export class UIController {
     if (optionsContainer) {
       if (isTypingMode) {
         optionsContainer.innerHTML = `
-          <div class="typing-container" style="grid-column: 1 / -1 !important; background: #0F172A !important; border: 3px solid #38BDF8 !important; border-radius: 24px !important; padding: 24px !important; display: flex !important; flex-direction: column !important; gap: 18px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;">
-            <p class="typing-label" style="font-family: 'Plus Jakarta Sans', sans-serif !important; font-size: 1.15rem !important; color: #FFFFFF !important; font-weight: 800 !important; text-align: center !important;">✏️ Digite no campo abaixo a(s) letra(s) ou a palavra inteira:</p>
-            <div class="typing-input-row" style="display: flex !important; gap: 12px !important; width: 100% !important;">
-              <input type="text" class="input-typing" placeholder="Digite aqui a resposta e aperte Enter..." autocomplete="off" spellcheck="false" style="flex: 1 !important; background: #020617 !important; border: 3px solid #38BDF8 !important; border-radius: 16px !important; padding: 14px 20px !important; font-family: 'Orbitron', sans-serif !important; font-size: 1.35rem !important; font-weight: 800 !important; color: #FFFFFF !important; outline: none !important;" />
-              <button class="btn btn-3d btn-primary btn-submit-typing" style="background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%) !important; color: #FFFFFF !important; font-family: 'Orbitron', sans-serif !important; font-weight: 800 !important; font-size: 1.1rem !important; padding: 14px 24px !important; border-radius: 16px !important; border: none !important; cursor: pointer !important; box-shadow: 0 6px 0 #0369A1 !important;">🚀 Confirmar</button>
+          <div class="typing-container">
+            <p class="typing-label">✏️ Digite no campo abaixo a(s) letra(s) ou a palavra inteira:</p>
+            <div class="typing-input-row">
+              <input type="text" class="input-typing" placeholder="Digite a resposta aqui..." autocomplete="off" spellcheck="false" />
+              <button class="btn btn-3d btn-primary btn-submit-typing">🚀 Confirmar</button>
             </div>
-            <div class="quick-accents" style="display: flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: center !important; gap: 10px !important;">
-              <span class="accent-title" style="font-size: 0.95rem !important; color: #94A3B8 !important; font-weight: 700 !important; width: 100% !important; text-align: center !important; margin-bottom: 4px !important;">Atalhos rápidos:</span>
-              ${['ão', 'am', 'á', 'à', 'ã', 'â', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ç', 'ch', 'x', 's', 'z', 'm', 'n'].map(v => `<button class="btn-accent" data-val="${v}" style="background: linear-gradient(135deg, #1E293B, #0F172A) !important; border: 2px solid #38BDF8 !important; color: #FFFFFF !important; font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important; font-size: 1.15rem !important; padding: 10px 18px !important; border-radius: 14px !important; cursor: pointer !important; box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;">${v}</button>`).join('')}
+            <div class="quick-accents">
+              <span class="accent-title">Atalhos rápidos:</span>
+              ${['ão', 'am', 'á', 'à', 'ã', 'â', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ç', 'ch', 'x', 's', 'z', 'm', 'n'].map(v => `<button class="btn-accent" data-val="${v}">${v}</button>`).join('')}
             </div>
           </div>
         `;
