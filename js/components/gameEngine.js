@@ -9,7 +9,7 @@ import { cloudDb } from '../services/cloudDb.js';
 export const MASCOTS = [
   {
     id: 'aranha',
-    name: 'Cyber Spider Hero',
+    name: 'Cyber Aranha Hero',
     price: 0,
     icon: '🕷️',
     img: 'images/cyber_hero.jpg',
