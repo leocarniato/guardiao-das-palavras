@@ -138,12 +138,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnResetData = document.getElementById('btn-reset-data');
   if (btnResetData) {
     btnResetData.onclick = () => {
-      if (confirm('Tem certeza de que deseja resetar todo o progresso do jogo? Esta ação não poderá ser desfeita.')) {
-        game.resetProgress();
-        ui.updateHeaderStats();
-        ui.renderParentPanel(document.getElementById('parent-panel-container'));
-        alert('Progresso resetado com sucesso!');
-      }
+      ui.showSystemConfirmModal({
+        title: '⚠️ Resetar Todo o Progresso?',
+        desc: 'Tem certeza de que deseja resetar todo o progresso do jogo? Esta ação não poderá ser desfeita.',
+        icon: '🚨',
+        confirmText: '🔄 Resetar Progresso',
+        onConfirm: () => {
+          game.resetProgress();
+          ui.updateHeaderStats();
+          ui.renderParentPanel(document.getElementById('parent-panel-container'));
+          ui.showToast('🎉 Progresso resetado com sucesso!', 'info');
+        }
+      });
     };
   }
 

@@ -492,6 +492,7 @@ export class GameEngine {
     this.savePlayerData();
 
     try {
+      await supabaseService.resetPassword(profileId, newHash);
       fetch('/api/profiles/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -502,22 +503,32 @@ export class GameEngine {
     return { success: true, message: `Senha do perfil '${profile.name}' redefinida com sucesso!` };
   }
 
-  adminGrantCoins(profileId, amount = 100) {
+  async adminGrantCoins(profileId, amount = 100) {
     const profile = this.profilesData.profiles[profileId];
     if (!profile) return false;
 
     profile.coins = (profile.coins || 0) + amount;
     this.savePlayerData();
+
+    try {
+      await supabaseService.saveProfile(profile);
+    } catch (e) {}
+
     return true;
   }
 
-  adminUnlockAllMascots(profileId) {
+  async adminUnlockAllMascots(profileId) {
     const profile = this.profilesData.profiles[profileId];
     if (!profile) return false;
 
     const allMascotIds = MASCOTS.map(m => m.id);
     profile.unlockedMascots = [...allMascotIds];
     this.savePlayerData();
+
+    try {
+      await supabaseService.saveProfile(profile);
+    } catch (e) {}
+
     return true;
   }
 

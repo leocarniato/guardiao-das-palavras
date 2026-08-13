@@ -857,15 +857,21 @@ export class UIController {
     containerEl.innerHTML = html;
 
     containerEl.querySelectorAll('.btn-parent-reset-password').forEach(btn => {
-      btn.onclick = async () => {
+      btn.onclick = () => {
         const id = btn.getAttribute('data-id');
         const name = btn.getAttribute('data-name');
-        const newPwd = prompt(`Digite a nova senha para o perfil de ${name}:`);
-        if (newPwd && newPwd.trim()) {
-          await this.game.setProfilePassword(id, newPwd.trim());
-          alert(`🎉 Senha do perfil de ${name} alterada com sucesso!`);
-          this.renderParentPanel(containerEl);
-        }
+        this.showSystemInputModal({
+          title: `🔑 Redefinir Senha de ${name}`,
+          desc: `Digite a nova senha que a criança utilizará para acessar o jogo:`,
+          icon: '👨‍👩‍👧',
+          placeholder: 'Digite a nova senha...',
+          inputType: 'password',
+          onConfirm: async (newPwd) => {
+            await this.game.setProfilePassword(id, newPwd);
+            this.showToast(`🎉 Senha do perfil de ${name} alterada com sucesso!`, 'success');
+            this.renderParentPanel(containerEl);
+          }
+        });
       };
     });
   }
@@ -979,55 +985,154 @@ export class UIController {
     }).join('');
 
     container.querySelectorAll('.btn-admin-reset-pwd').forEach(btn => {
-      btn.onclick = async () => {
+      btn.onclick = () => {
         const pId = btn.getAttribute('data-id');
         const pName = btn.getAttribute('data-name');
-        const newPwd = prompt(`Digite a nova senha para o perfil '${pName}':`);
-        if (newPwd !== null && newPwd.trim() !== '') {
-          const res = await this.game.adminResetPassword(pId, newPwd.trim());
-          this.showToast(res.message, res.success ? 'success' : 'error');
-          this.renderAdminProfilesGrid();
-        }
+        this.showSystemInputModal({
+          title: `🔑 Redefinir Senha de ${pName}`,
+          desc: `Digite a nova senha para o perfil do jogador '${pName}':`,
+          icon: '🔑',
+          placeholder: 'Digite a nova senha...',
+          inputType: 'password',
+          onConfirm: async (newPwd) => {
+            const res = await this.game.adminResetPassword(pId, newPwd);
+            this.showToast(res.message, res.success ? 'success' : 'error');
+            await this.game.fetchDbProfiles();
+            this.renderAdminProfilesGrid();
+          }
+        });
       };
     });
 
     container.querySelectorAll('.btn-admin-add-coins').forEach(btn => {
-      btn.onclick = () => {
+      btn.onclick = async () => {
         const pId = btn.getAttribute('data-id');
-        if (this.game.adminGrantCoins(pId, 100)) {
+        const res = await this.game.adminGrantCoins(pId, 100);
+        if (res) {
           soundManager.playSuccess();
+          this.showToast('🪙 100 Moedas concedidas com sucesso ao jogador!', 'coins');
+          await this.game.fetchDbProfiles();
           this.updateHeaderStats();
           this.renderAdminProfilesGrid();
-          this.showToast('🪙 100 Moedas concedidas com sucesso!', 'coins');
         }
       };
     });
 
     container.querySelectorAll('.btn-admin-unlock-all').forEach(btn => {
-      btn.onclick = () => {
+      btn.onclick = async () => {
         const pId = btn.getAttribute('data-id');
-        if (this.game.adminUnlockAllMascots(pId)) {
+        const res = await this.game.adminUnlockAllMascots(pId);
+        if (res) {
           soundManager.playFanfare();
+          this.showToast('🔓 Todos os mascotes desbloqueados para o jogador!', 'success');
+          await this.game.fetchDbProfiles();
           this.updateHeaderStats();
           this.renderAdminProfilesGrid();
-          this.showToast('🔓 Todos os mascotes desbloqueados para o jogador!', 'success');
         }
       };
     });
 
     container.querySelectorAll('.btn-admin-delete-user').forEach(btn => {
-      btn.onclick = async () => {
+      btn.onclick = () => {
         const pId = btn.getAttribute('data-id');
         const pName = btn.getAttribute('data-name');
 
-        if (confirm(`Tem certeza de que deseja apagar permanentemente o perfil do usuário '${pName}'? Esta ação não pode ser desfeita.`)) {
-          const res = await this.game.deleteProfile(pId);
-          this.showToast(res.message || 'Perfil apagado!', 'info');
-          this.updateHeaderStats();
-          this.renderAdminProfilesGrid();
-        }
+        this.showSystemConfirmModal({
+          title: `🗑️ Apagar Usuário ${pName}?`,
+          desc: `Tem certeza de que deseja apagar permanentemente o perfil do usuário '${pName}'? Esta ação não pode ser desfeita.`,
+          icon: '⚠️',
+          confirmText: '🗑️ Confirmar Exclusão',
+          onConfirm: async () => {
+            const res = await this.game.deleteProfile(pId);
+            this.showToast(res.message || 'Perfil apagado com sucesso!', 'info');
+            await this.game.fetchDbProfiles();
+            this.updateHeaderStats();
+            this.renderAdminProfilesGrid();
+          }
+        });
       };
     });
+  }
+
+  showSystemConfirmModal({ title = 'Confirmação', desc = 'Deseja continuar?', icon = '❓', confirmText = '✅ Confirmar', onConfirm, onCancel }) {
+    const modal = document.getElementById('system-popup-modal');
+    if (!modal) return;
+
+    const iconEl = document.getElementById('system-popup-icon');
+    const titleEl = document.getElementById('system-popup-title');
+    const descEl = document.getElementById('system-popup-desc');
+    const inputContainer = document.getElementById('system-popup-input-container');
+    const btnConfirm = document.getElementById('btn-system-popup-confirm');
+    const btnClose = document.getElementById('btn-system-popup-close');
+
+    if (iconEl) iconEl.textContent = icon;
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = desc;
+    if (inputContainer) inputContainer.style.display = 'none';
+
+    if (btnConfirm) {
+      btnConfirm.textContent = confirmText;
+      btnConfirm.onclick = () => {
+        modal.classList.remove('active');
+        if (onConfirm) onConfirm();
+      };
+    }
+
+    if (btnClose) {
+      btnClose.onclick = () => {
+        modal.classList.remove('active');
+        if (onCancel) onCancel();
+      };
+    }
+
+    modal.classList.add('active');
+  }
+
+  showSystemInputModal({ title = 'Entrada de Dados', desc = 'Digite as informações abaixo:', icon = '🔑', placeholder = 'Digite aqui...', inputType = 'text', confirmText = '✅ Confirmar', onConfirm, onCancel }) {
+    const modal = document.getElementById('system-popup-modal');
+    if (!modal) return;
+
+    const iconEl = document.getElementById('system-popup-icon');
+    const titleEl = document.getElementById('system-popup-title');
+    const descEl = document.getElementById('system-popup-desc');
+    const inputContainer = document.getElementById('system-popup-input-container');
+    const inputEl = document.getElementById('input-system-popup');
+    const btnConfirm = document.getElementById('btn-system-popup-confirm');
+    const btnClose = document.getElementById('btn-system-popup-close');
+
+    if (iconEl) iconEl.textContent = icon;
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = desc;
+
+    if (inputContainer && inputEl) {
+      inputContainer.style.display = 'block';
+      inputEl.type = inputType;
+      inputEl.placeholder = placeholder;
+      inputEl.value = '';
+      setTimeout(() => inputEl.focus(), 100);
+    }
+
+    if (btnConfirm && inputEl) {
+      btnConfirm.textContent = confirmText;
+      btnConfirm.onclick = () => {
+        const val = inputEl.value.trim();
+        if (!val) {
+          this.showToast('⚠️ Por favor, preencha o campo de texto antes de confirmar.', 'warning');
+          return;
+        }
+        modal.classList.remove('active');
+        if (onConfirm) onConfirm(val);
+      };
+    }
+
+    if (btnClose) {
+      btnClose.onclick = () => {
+        modal.classList.remove('active');
+        if (onCancel) onCancel();
+      };
+    }
+
+    modal.classList.add('active');
   }
 
   // Efeito de Confetes no Canvas HTML5
@@ -1214,29 +1319,46 @@ export class UIController {
     });
 
     container.querySelectorAll('.btn-delete-profile').forEach(btn => {
-      btn.onclick = async () => {
+      btn.onclick = () => {
         const id = btn.getAttribute('data-id');
         const targetProfile = profiles.find(p => p.id === id);
         if (!targetProfile) return;
 
         if (this.game.hasPassword(id)) {
-          const inputPwd = prompt(`Para excluir o perfil de ${targetProfile.name}, digite a senha correspondente:`);
-          if (!inputPwd) return;
-          const isOk = await this.game.verifyPassword(id, inputPwd);
-          if (!isOk) {
-            this.showToast('❌ Senha incorreta! O perfil não foi excluído.', 'error');
-            return;
-          }
+          this.showSystemInputModal({
+            title: `🔑 Confirmar Exclusão de ${targetProfile.name}`,
+            desc: `Para excluir este perfil, digite a senha correspondente:`,
+            icon: '🔒',
+            placeholder: 'Digite a senha do perfil...',
+            inputType: 'password',
+            onConfirm: async (inputPwd) => {
+              const isOk = await this.game.verifyPassword(id, inputPwd);
+              if (!isOk) {
+                this.showToast('❌ Senha incorreta! O perfil não foi excluído.', 'error');
+                return;
+              }
+              const res = await this.game.deleteProfile(id);
+              this.showToast(res.message || 'Perfil excluído!', 'info');
+              await this.game.fetchDbProfiles();
+              this.updateHeaderStats();
+              this.renderProfilesList();
+            }
+          });
         } else {
-          if (!confirm(`Tem certeza de que deseja excluir o perfil de ${targetProfile.name}?`)) {
-            return;
-          }
+          this.showSystemConfirmModal({
+            title: `🗑️ Excluir Perfil de ${targetProfile.name}?`,
+            desc: `Tem certeza de que deseja excluir permanentemente este perfil?`,
+            icon: '⚠️',
+            confirmText: '🗑️ Excluir Perfil',
+            onConfirm: async () => {
+              const res = await this.game.deleteProfile(id);
+              this.showToast(res.message || 'Perfil excluído!', 'info');
+              await this.game.fetchDbProfiles();
+              this.updateHeaderStats();
+              this.renderProfilesList();
+            }
+          });
         }
-
-        this.game.deleteProfile(id);
-        this.updateHeaderStats();
-        this.renderProfilesList();
-        this.showToast(`🗑️ Perfil de ${targetProfile.name} excluído.`, 'info');
       };
     });
   }
