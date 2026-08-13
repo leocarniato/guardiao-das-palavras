@@ -1,8 +1,9 @@
 /**
  * Guardião das Palavras - Single Bundle JS (Compatível com file:// e http://)
- * 1. Restauração Completa do Menu de Missões Temáticas (Futebol, Homem-Aranha, Roblox, Minion, Arena Gamer, F1, Batman) igual à Foto 2!
- * 2. Estrutura Dupla de Frases para Fases e Puzzles.
- * 3. Proteção do Banco de Dados SQLite (guardiao.db) para nunca mais apagar usuários nas atualizações do GitHub.
+ * 1. Destaque Visual Dourado para a Palavra Alvo (.target-word-highlight)
+ * 2. Lacuna Compacta Padronizada [_] em Todos os Exercícios
+ * 3. Leitura com Espaçamento de Palavras Aumentado (word-spacing: 8px; line-height: 2.2)
+ * 4. Proteção Total do Banco de Dados (guardiao.db) no Gitignore.
  */
 
 // 1. DADOS DE PERGUNTAS E CATEGORIAS COM OS TEMAS DE PERSONAGENS EXATOS DA FOTO 2
@@ -76,80 +77,80 @@ const QUESTIONS_DATA = {
   ao_am: [
     {
       word: 'viajarão',
-      sentenceItem: 'Amanhã os alunos viajar[ ___ ] para o acampamento escolar.',
-      sentenceFull: 'Amanhã os alunos [ ___ ] para o acampamento escolar.',
+      sentenceItem: 'Amanhã os alunos viajar[_] para o acampamento escolar.',
+      sentenceFull: 'Amanhã os alunos [_] para o acampamento escolar.',
       options: ['ÃO', 'AM'],
       correct: 0,
       explanation: 'Viajarão (com ÃO) indica uma ação que acontecerá no FUTURO (amanhã).'
     },
     {
       word: 'jogaram',
-      sentenceItem: 'Ontem à tarde os meninos jogar[ ___ ] futebol no parque.',
-      sentenceFull: 'Ontem à tarde os meninos [ ___ ] futebol no parque.',
+      sentenceItem: 'Ontem à tarde os meninos jogar[_] futebol no parque.',
+      sentenceFull: 'Ontem à tarde os meninos [_] futebol no parque.',
       options: ['AM', 'ÃO'],
       correct: 0,
       explanation: 'Jogaram (com AM) indica uma ação que já aconteceu no PASSADO (ontem).'
     },
     {
       word: 'cantarão',
-      sentenceItem: 'No próximo sábado elas cantar[ ___ ] no coral da escola.',
-      sentenceFull: 'No próximo sábado elas [ ___ ] no coral da escola.',
+      sentenceItem: 'No próximo sábado elas cantar[_] no coral da escola.',
+      sentenceFull: 'No próximo sábado elas [_] no coral da escola.',
       options: ['ÃO', 'AM'],
       correct: 0,
       explanation: 'Como a frase fala do "próximo sábado", usaremos o futuro: cantarão (ÃO).'
     },
     {
       word: 'correram',
-      sentenceItem: 'Na semana passada os atletas correr[ ___ ] na maratona.',
-      sentenceFull: 'Na semana passada os atletas [ ___ ] na maratona.',
+      sentenceItem: 'Na semana passada os atletas correr[_] na maratona.',
+      sentenceFull: 'Na semana passada os atletas [_] na maratona.',
       options: ['AM', 'ÃO'],
       correct: 0,
       explanation: 'Semana passada já aconteceu (passado), por isso usamos correram (AM).'
     },
     {
       word: 'estudarão',
-      sentenceItem: 'Ano que vem os estudantes estudar[ ___ ] para o exame final.',
-      sentenceFull: 'Ano que vem os estudantes [ ___ ] para o exame final.',
+      sentenceItem: 'Ano que vem os estudantes estudar[_] para o exame final.',
+      sentenceFull: 'Ano que vem os estudantes [_] para o exame final.',
       options: ['ÃO', 'AM'],
       correct: 0,
       explanation: 'Ano que vem é futuro: estudarão (ÃO).'
     },
     {
       word: 'assistiram',
-      sentenceItem: 'Ontem à noite todas as crianças assistir[ ___ ] ao filme.',
-      sentenceFull: 'Ontem à noite todas as crianças [ ___ ] ao filme.',
+      sentenceItem: 'Ontem à noite todas as crianças assistir[_] ao filme.',
+      sentenceFull: 'Ontem à noite todas as crianças [_] ao filme.',
       options: ['AM', 'ÃO'],
       correct: 0,
       explanation: 'Ontem à noite é passado: assistiram (AM).'
     },
     {
       word: 'ajudarão',
-      sentenceItem: 'No futuro os robôs ajudar[ ___ ] os cientistas nas tarefas.',
-      sentenceFull: 'No futuro os robôs [ ___ ] os cientistas nas tarefas.',
+      sentenceItem: 'No futuro os robôs ajudar[_] os cientistas nas tarefas.',
+      sentenceFull: 'No futuro os robôs [_] os cientistas nas tarefas.',
       options: ['ÃO', 'AM'],
       correct: 0,
       explanation: 'No futuro é uma ação que vai acontecer: ajudarão (ÃO).'
     },
     {
       word: 'latiram',
-      sentenceItem: 'Ontem os cães do vizinho latir[ ___ ] a noite inteira.',
-      sentenceFull: 'Ontem os cães do vizinho [ ___ ] a noite inteira.',
+      sentenceItem: 'Ontem os cães do vizinho latir[_] a noite inteira.',
+      sentenceFull: 'Ontem os cães do vizinho [_] a noite inteira.',
       options: ['AM', 'ÃO'],
       correct: 0,
       explanation: 'Ontem é passado: latiram (AM).'
     },
     {
       word: 'prepararão',
-      sentenceItem: 'Amanhã à tarde os cozinheiros preparar[ ___ ] o bolo.',
-      sentenceFull: 'Amanhã à tarde os cozinheiros [ ___ ] o bolo.',
+      sentenceItem: 'Amanhã à tarde os cozinheiros preparar[_] o bolo.',
+      sentenceFull: 'Amanhã à tarde os cozinheiros [_] o bolo.',
       options: ['ÃO', 'AM'],
       correct: 0,
       explanation: 'Amanhã é futuro: prepararão (ÃO).'
     },
     {
       word: 'escreveram',
-      sentenceItem: 'Mês passado eles escrever[ ___ ] um novo livro de aventura.',
-      sentenceFull: 'Mês passado eles [ ___ ] um novo livro de aventura.',
+      sentenceItem: 'Mês passado eles escrever[_] um novo livro de aventura.',
+      sentenceFull: 'Mês passado eles [_] um novo livro de aventura.',
       options: ['AM', 'ÃO'],
       correct: 0,
       explanation: 'Mês passado é passado: escreveram (AM).'
@@ -158,80 +159,80 @@ const QUESTIONS_DATA = {
   som_z: [
     {
       word: 'mesa',
-      sentenceItem: 'A me[ ___ ]a da sala de jantar é feita de madeira nobre.',
-      sentenceFull: 'A [ ___ ] da sala de jantar é feita de madeira nobre.',
+      sentenceItem: 'A me[_]a da sala de jantar é feita de madeira nobre.',
+      sentenceFull: 'A [_] da sala de jantar é feita de madeira nobre.',
       options: ['S', 'Z', 'X'],
       correct: 0,
       explanation: 'A palavra MESA é escrita com S, mas tem som de Z por estar entre duas vogais.'
     },
     {
       word: 'beleza',
-      sentenceItem: 'A florista admirou a bele[ ___ ]a da rosa no jardim.',
-      sentenceFull: 'A florista admirou a [ ___ ] da rosa no jardim.',
+      sentenceItem: 'A florista admirou a bele[_]a da rosa no jardim.',
+      sentenceFull: 'A florista admirou a [_] da rosa no jardim.',
       options: ['Z', 'S', 'X'],
       correct: 0,
       explanation: 'A palavra BELEZA é escrita com Z!'
     },
     {
       word: 'exemplo',
-      sentenceItem: 'O professor deu um ótimo e[ ___ ]emplo para a turma.',
-      sentenceFull: 'O professor deu um ótimo [ ___ ] para a turma.',
+      sentenceItem: 'O professor deu um ótimo e[_]emplo para a turma.',
+      sentenceFull: 'O professor deu um ótimo [_] para a turma.',
       options: ['X', 'Z', 'S'],
       correct: 0,
       explanation: 'EXEMPLO é escrito com X, mas a letra X tem som de Z nesta palavra!'
     },
     {
       word: 'casa',
-      sentenceItem: 'A ca[ ___ ]a da vovó fica perto da montanha.',
-      sentenceFull: 'A [ ___ ] da vovó fica perto da montanha.',
+      sentenceItem: 'A ca[_]a da vovó fica perto da montanha.',
+      sentenceFull: 'A [_] da vovó fica perto da montanha.',
       options: ['S', 'Z', 'X'],
       correct: 0,
       explanation: 'CASA é escrita com S (com som de Z entre vogais).'
     },
     {
       word: 'azul',
-      sentenceItem: 'O céu limpo de verão estava muito a[ ___ ]ul.',
-      sentenceFull: 'O céu limpo de verão estava muito [ ___ ].',
+      sentenceItem: 'O céu limpo de verão estava muito a[_]ul.',
+      sentenceFull: 'O céu limpo de verão estava muito [_].',
       options: ['Z', 'S', 'X'],
       correct: 0,
       explanation: 'AZUL é escrita com Z.'
     },
     {
       word: 'exame',
-      sentenceItem: 'O jovem estudante fez um e[ ___ ]ame de matemática.',
-      sentenceFull: 'O jovem estudante fez um [ ___ ] de matemática.',
+      sentenceItem: 'O jovem estudante fez um e[_]ame de matemática.',
+      sentenceFull: 'O jovem estudante fez um [_] de matemática.',
       options: ['X', 'Z', 'S'],
       correct: 0,
       explanation: 'EXAME é escrito com X (com som de Z).'
     },
     {
       word: 'princesa',
-      sentenceItem: 'A linda prince[ ___ ]a vivia num castelo distante.',
-      sentenceFull: 'A linda [ ___ ] vivia num castelo distante.',
+      sentenceItem: 'A linda prince[_]a vivia num castelo distante.',
+      sentenceFull: 'A linda [_] vivia num castelo distante.',
       options: ['S', 'Z', 'X'],
       correct: 0,
       explanation: 'PRINCESA é escrita com S.'
     },
     {
       word: 'natureza',
-      sentenceItem: 'Devemos respeitar e cuidar da nature[ ___ ]a.',
-      sentenceFull: 'Devemos respeitar e cuidar da [ ___ ].',
+      sentenceItem: 'Devemos respeitar e cuidar da nature[_]a.',
+      sentenceFull: 'Devemos respeitar e cuidar da [_].',
       options: ['Z', 'S', 'X'],
       correct: 0,
       explanation: 'NATUREZA é escrita com Z.'
     },
     {
       word: 'exército',
-      sentenceItem: 'O e[ ___ ]ército defendeu o país com coragem.',
-      sentenceFull: 'O [ ___ ] defendeu o país com coragem.',
+      sentenceItem: 'O e[_]ército defendeu o país com coragem.',
+      sentenceFull: 'O [_] defendeu o país com coragem.',
       options: ['X', 'Z', 'S'],
       correct: 0,
       explanation: 'EXÉRCITO é escrito com X com som de Z.'
     },
     {
       word: 'rosa',
-      sentenceItem: 'Coloquei uma ro[ ___ ]a cheirosa no vaso de vidro.',
-      sentenceFull: 'Coloquei uma [ ___ ] cheirosa no vaso de vidro.',
+      sentenceItem: 'Coloquei uma ro[_]a cheirosa no vaso de vidro.',
+      sentenceFull: 'Coloquei uma [_] cheirosa no vaso de vidro.',
       options: ['S', 'Z', 'X'],
       correct: 0,
       explanation: 'ROSA é escrita com S.'
@@ -240,80 +241,80 @@ const QUESTIONS_DATA = {
   m_pb: [
     {
       word: 'campo',
-      sentenceItem: 'Os atletas correm pelo ca[ ___ ]po de futebol.',
-      sentenceFull: 'Os atletas correm pelo [ ___ ] de futebol.',
+      sentenceItem: 'Os atletas correm pelo ca[_]po de futebol.',
+      sentenceFull: 'Os atletas correm pelo [_] de futebol.',
       options: ['M', 'N'],
       correct: 0,
       explanation: 'Usamos M antes da letra P (caMpo).'
     },
     {
       word: 'tambor',
-      sentenceItem: 'O músico tocou o ta[ ___ ]bor com muita energia.',
-      sentenceFull: 'O músico tocou o [ ___ ] com muita energia.',
+      sentenceItem: 'O músico tocou o ta[_]bor com muita energia.',
+      sentenceFull: 'O músico tocou o [_] com muita energia.',
       options: ['M', 'N'],
       correct: 0,
       explanation: 'Usamos M antes da letra B (taMbor).'
     },
     {
       word: 'canto',
-      sentenceItem: 'O pássaro entoou um lindo ca[ ___ ]to no galho.',
-      sentenceFull: 'O pássaro entoou um lindo [ ___ ] no galho.',
+      sentenceItem: 'O pássaro entoou um lindo ca[_]to no galho.',
+      sentenceFull: 'O pássaro entoou um lindo [_] no galho.',
       options: ['N', 'M'],
       correct: 0,
       explanation: 'Usamos N pois a letra seguinte é T (não é P nem B).'
     },
     {
       word: 'samba',
-      sentenceItem: 'A multidão dançou ao som do sa[ ___ ]ba brasileiro.',
-      sentenceFull: 'A multidão dançou ao som do [ ___ ] brasileiro.',
+      sentenceItem: 'A multidão dançou ao som do sa[_]ba brasileiro.',
+      sentenceFull: 'A multidão dançou ao som do [_] brasileiro.',
       options: ['M', 'N'],
       correct: 0,
       explanation: 'Usamos M antes da letra B (saMba).'
     },
     {
       word: 'lâmpada',
-      sentenceItem: 'Acenda a lâ[ ___ ]pada para iluminar o quarto.',
-      sentenceFull: 'Acenda a [ ___ ] para iluminar o quarto.',
+      sentenceItem: 'Acenda a lâ[_]pada para iluminar o quarto.',
+      sentenceFull: 'Acenda a [_] para iluminar o quarto.',
       options: ['M', 'N'],
       correct: 0,
       explanation: 'Usamos M antes de P (lâMpada).'
     },
     {
       word: 'ponte',
-      sentenceItem: 'Atravessamos a po[ ___ ]te sobre o rio agitado.',
-      sentenceFull: 'Atravessamos a [ ___ ] sobre o rio agitado.',
+      sentenceItem: 'Atravessamos a po[_]te sobre o rio agitado.',
+      sentenceFull: 'Atravessamos a [_] sobre o rio agitado.',
       options: ['N', 'M'],
       correct: 0,
       explanation: 'Usamos N pois a letra seguinte é T.'
     },
     {
       word: 'bomba',
-      sentenceItem: 'Os bombeiros desativaram a bo[ ___ ]ba em segurança.',
-      sentenceFull: 'Os bombeiros desativaram a [ ___ ] em segurança.',
+      sentenceItem: 'Os bombeiros desativaram a bo[_]ba em segurança.',
+      sentenceFull: 'Os bombeiros desativaram a [_] em segurança.',
       options: ['M', 'N'],
       correct: 0,
       explanation: 'Usamos M antes de B (boMba).'
     },
     {
       word: 'computador',
-      sentenceItem: 'Liguei o co[ ___ ]putador para fazer a lição de casa.',
-      sentenceFull: 'Liguei o [ ___ ] para fazer a lição de casa.',
+      sentenceItem: 'Liguei o co[_]putador para fazer a lição de casa.',
+      sentenceFull: 'Liguei o [_] para fazer a lição de casa.',
       options: ['M', 'N'],
       correct: 0,
       explanation: 'Usamos M antes de P (coMputador).'
     },
     {
       word: 'dente',
-      sentenceItem: 'Fui ao dentista cuidar do meu de[ ___ ]te.',
-      sentenceFull: 'Fui ao dentista cuidar do meu [ ___ ].',
+      sentenceItem: 'Fui ao dentista cuidar do meu de[_]te.',
+      sentenceFull: 'Fui ao dentista cuidar do meu [_].',
       options: ['N', 'M'],
       correct: 0,
       explanation: 'Usamos N pois a letra seguinte é T.'
     },
     {
       word: 'umbigo',
-      sentenceItem: 'O bebê tem um pequeno sinal perto do u[ ___ ]bigo.',
-      sentenceFull: 'O bebê tem um pequeno sinal perto do [ ___ ].',
+      sentenceItem: 'O bebê tem um pequeno sinal perto do u[_]bigo.',
+      sentenceFull: 'O bebê tem um pequeno sinal perto do [_].',
       options: ['M', 'N'],
       correct: 0,
       explanation: 'Usamos M antes de B (uMbigo).'
@@ -322,80 +323,80 @@ const QUESTIONS_DATA = {
   ch_x: [
     {
       word: 'chuva',
-      sentenceItem: 'A forte [ ___ ]uva molhou todas as calçadas.',
-      sentenceFull: 'A forte [ ___ ] molhou todas as calçadas.',
+      sentenceItem: 'A forte [_]uva molhou todas as calçadas.',
+      sentenceFull: 'A forte [_] molhou todas as calçadas.',
       options: ['CH', 'X'],
       correct: 0,
       explanation: 'CHUVA se escreve com CH!'
     },
     {
       word: 'xícara',
-      sentenceItem: 'Vovó serviu chá quente em uma [ ___ ]ícara azul.',
-      sentenceFull: 'Vovó serviu chá quente em uma [ ___ ] azul.',
+      sentenceItem: 'Vovó serviu chá quente em uma [_]ícara azul.',
+      sentenceFull: 'Vovó serviu chá quente em uma [_] azul.',
       options: ['X', 'CH'],
       correct: 0,
       explanation: 'XÍCARA se escreve com X!'
     },
     {
       word: 'caixa',
-      sentenceItem: 'Guardei meus brinquedos dentro da cai[ ___ ]a.',
-      sentenceFull: 'Guardei meus brinquedos dentro da [ ___ ].',
+      sentenceItem: 'Guardei meus brinquedos dentro da cai[_]a.',
+      sentenceFull: 'Guardei meus brinquedos dentro da [_].',
       options: ['X', 'CH'],
       correct: 0,
       explanation: 'CAIXA se escreve com X!'
     },
     {
       word: 'chave',
-      sentenceItem: 'Usei a [ ___ ]ave dourada para abrir o portão.',
-      sentenceFull: 'Usei a [ ___ ] dourada para abrir o portão.',
+      sentenceItem: 'Usei a [_]ave dourada para abrir o portão.',
+      sentenceFull: 'Usei a [_] dourada para abrir o portão.',
       options: ['CH', 'X'],
       correct: 0,
       explanation: 'CHAVE se escreve com CH!'
     },
     {
       word: 'lixo',
-      sentenceItem: 'Jogue as embalagens usadas no li[ ___ ]o.',
-      sentenceFull: 'Jogue as embalagens usadas no [ ___ ].',
+      sentenceItem: 'Jogue as embalagens usadas no li[_]o.',
+      sentenceFull: 'Jogue as embalagens usadas no [_].',
       options: ['X', 'CH'],
       correct: 0,
       explanation: 'LIXO se escreve com X!'
     },
     {
       word: 'chocolate',
-      sentenceItem: 'Comi um pedaço de [ ___ ]ocolate ao leite.',
-      sentenceFull: 'Comi um pedaço de [ ___ ] ao leite.',
+      sentenceItem: 'Comi um pedaço de [_]ocolate ao leite.',
+      sentenceFull: 'Comi um pedaço de [_] ao leite.',
       options: ['CH', 'X'],
       correct: 0,
       explanation: 'CHOCOLATE se escreve com CH!'
     },
     {
       word: 'peixe',
-      sentenceItem: 'O peixinho e o pei[ ___ ]e nadavam no lago.',
-      sentenceFull: 'O peixinho e o [ ___ ] nadavam no lago.',
+      sentenceItem: 'O peixinho e o pei[_]e nadavam no lago.',
+      sentenceFull: 'O peixinho e o [_] nadavam no lago.',
       options: ['X', 'CH'],
       correct: 0,
       explanation: 'PEIXE se escreve com X!'
     },
     {
       word: 'chinelos',
-      sentenceItem: 'Calcei meus [ ___ ]inelos confortáveis para caminhar.',
-      sentenceFull: 'Calcei meus [ ___ ] confortáveis para caminhar.',
+      sentenceItem: 'Calcei meus [_]inelos confortáveis para caminhar.',
+      sentenceFull: 'Calcei meus [_] confortáveis para caminhar.',
       options: ['CH', 'X'],
       correct: 0,
       explanation: 'CHINELOS se escreve com CH!'
     },
     {
       word: 'bexiga',
-      sentenceItem: 'O palhaço encheu uma grande be[ ___ ]iga vermelha.',
-      sentenceFull: 'O palhaço encheu uma grande [ ___ ] vermelha.',
+      sentenceItem: 'O palhaço encheu uma grande be[_]iga vermelha.',
+      sentenceFull: 'O palhaço encheu uma grande [_] vermelha.',
       options: ['X', 'CH'],
       correct: 0,
       explanation: 'BEXIGA se escreve com X!'
     },
     {
       word: 'mochila',
-      sentenceItem: 'Coloquei os cadernos dentro da minha mo[ ___ ]ila.',
-      sentenceFull: 'Coloquei os cadernos dentro da minha [ ___ ].',
+      sentenceItem: 'Coloquei os cadernos dentro da minha mo[_]ila.',
+      sentenceFull: 'Coloquei os cadernos dentro da minha [_].',
       options: ['CH', 'X'],
       correct: 0,
       explanation: 'MOCHILA se escreve com CH!'
@@ -404,80 +405,80 @@ const QUESTIONS_DATA = {
   g_j: [
     {
       word: 'girafa',
-      sentenceItem: 'A elegante [ ___ ]irafa alcança as folhas mais altas.',
-      sentenceFull: 'A elegante [ ___ ] alcança as folhas mais altas.',
+      sentenceItem: 'A elegante [_]irafa alcança as folhas mais altas.',
+      sentenceFull: 'A elegante [_] alcança as folhas mais altas.',
       options: ['G', 'J'],
       correct: 0,
       explanation: 'GIRAFA se escreve com G!'
     },
     {
       word: 'jibóia',
-      sentenceItem: 'A perigosa [ ___ ]ibóia deslizava entre as pedras.',
-      sentenceFull: 'A perigosa [ ___ ] deslizava entre as pedras.',
+      sentenceItem: 'A perigosa [_]ibóia deslizava entre as pedras.',
+      sentenceFull: 'A perigosa [_] deslizava entre as pedras.',
       options: ['J', 'G'],
       correct: 0,
       explanation: 'JIBÓIA se escreve com J!'
     },
     {
       word: 'gelo',
-      sentenceItem: 'Coloquei cubos de [ ___ ]elo na limonada bem gelada.',
-      sentenceFull: 'Coloquei cubos de [ ___ ] na limonada bem gelada.',
+      sentenceItem: 'Coloquei cubos de [_]elo na limonada bem gelada.',
+      sentenceFull: 'Coloquei cubos de [_] na limonada bem gelada.',
       options: ['G', 'J'],
       correct: 0,
       explanation: 'GELO se escreve com G!'
     },
     {
       word: 'janela',
-      sentenceItem: 'Abri a [ ___ ]anela do quarto para ver a luz do sol.',
-      sentenceFull: 'Abri a [ ___ ] do quarto para ver a luz do sol.',
+      sentenceItem: 'Abri a [_]anela do quarto para ver a luz do sol.',
+      sentenceFull: 'Abri a [_] do quarto para ver a luz do sol.',
       options: ['J', 'G'],
       correct: 0,
       explanation: 'JANELA se escreve com J!'
     },
     {
       word: 'gente',
-      sentenceItem: 'Havia muita [ ___ ]ente animada na festa de aniversário.',
-      sentenceFull: 'Havia muita [ ___ ] animada na festa de aniversário.',
+      sentenceItem: 'Havia muita [_]ente animada na festa de aniversário.',
+      sentenceFull: 'Havia muita [_] animada na festa de aniversário.',
       options: ['G', 'J'],
       correct: 0,
       explanation: 'GENTE se escreve com G!'
     },
     {
       word: 'jacaré',
-      sentenceItem: 'O grande [ ___ ]acaré tomava sol na beira do rio.',
-      sentenceFull: 'O grande [ ___ ] tomava sol na beira do rio.',
+      sentenceItem: 'O grande [_]acaré tomava sol na beira do rio.',
+      sentenceFull: 'O grande [_] tomava sol na beira do rio.',
       options: ['J', 'G'],
       correct: 0,
       explanation: 'JACARÉ se escreve com J!'
     },
     {
       word: 'relógio',
-      sentenceItem: 'Olhei as horas no reló[ ___ ]io de pulso.',
-      sentenceFull: 'Olhei as horas no [ ___ ] de pulso.',
+      sentenceItem: 'Olhei as horas no reló[_]io de pulso.',
+      sentenceFull: 'Olhei as horas no [_] de pulso.',
       options: ['G', 'J'],
       correct: 0,
       explanation: 'RELÓGIO se escreve com G!'
     },
     {
       word: 'jogo',
-      sentenceItem: 'Vencemos o [ ___ ]ogo de tabuleiro com os amigos.',
-      sentenceFull: 'Vencemos o [ ___ ] de tabuleiro com os amigos.',
+      sentenceItem: 'Vencemos o [_]ogo de tabuleiro com os amigos.',
+      sentenceFull: 'Vencemos o [_] de tabuleiro com os amigos.',
       options: ['J', 'G'],
       correct: 0,
       explanation: 'JOGO se escreve com J!'
     },
     {
       word: 'mágico',
-      sentenceItem: 'O má[ ___ ]ico tirou um coelho da cartola.',
-      sentenceFull: 'O [ ___ ] tirou um coelho da cartola.',
+      sentenceItem: 'O má[_]ico tirou um coelho da cartola.',
+      sentenceFull: 'O [_] tirou um coelho da cartola.',
       options: ['G', 'J'],
       correct: 0,
       explanation: 'MÁGICO se escreve com G!'
     },
     {
       word: 'jardim',
-      sentenceItem: 'As flores coloridas perfumam todo o [ ___ ]ardim.',
-      sentenceFull: 'As flores coloridas perfumam todo o [ ___ ].',
+      sentenceItem: 'As flores coloridas perfumam todo o [_]ardim.',
+      sentenceFull: 'As flores coloridas perfumam todo o [_].',
       options: ['J', 'G'],
       correct: 0,
       explanation: 'JARDIM se escreve com J!'
@@ -486,80 +487,80 @@ const QUESTIONS_DATA = {
   s_ss_c_cedilha: [
     {
       word: 'massa',
-      sentenceItem: 'A mama cozinhou uma ma[ ___ ]a italiana saborosa.',
-      sentenceFull: 'A mama cozinhou uma [ ___ ] italiana saborosa.',
+      sentenceItem: 'A mama cozinhou uma ma[_]a italiana saborosa.',
+      sentenceFull: 'A mama cozinhou uma [_] italiana saborosa.',
       options: ['SS', 'S', 'Ç', 'C'],
       correct: 0,
       explanation: 'MASSA se escreve com SS entre vogais para manter o som forte de S!'
     },
     {
       word: 'sol',
-      sentenceItem: 'O radiante [ ___ ]ol iluminou toda a praia.',
-      sentenceFull: 'O radiante [ ___ ] iluminou toda a praia.',
+      sentenceItem: 'O radiante [_]ol iluminou toda a praia.',
+      sentenceFull: 'O radiante [_] iluminou toda a praia.',
       options: ['S', 'SS', 'C', 'Ç'],
       correct: 0,
       explanation: 'No início de palavras só se usa S simples (nunca SS ou Ç).'
     },
     {
       word: 'cabeça',
-      sentenceItem: 'A garota usava um lacinho fofo na cabe[ ___ ]a.',
-      sentenceFull: 'A garota usava um lacinho fofo na [ ___ ].',
+      sentenceItem: 'A garota usava um lacinho fofo na cabe[_]a.',
+      sentenceFull: 'A garota usava um lacinho fofo na [_].',
       options: ['Ç', 'C', 'S', 'SS'],
       correct: 0,
       explanation: 'CABEÇA se escreve com Ç antes da vogal A!'
     },
     {
       word: 'cenoura',
-      sentenceItem: 'O coelhinho adorava roer uma [ ___ ]enoura fresca.',
-      sentenceFull: 'O coelhinho adorava roer uma [ ___ ] fresca.',
+      sentenceItem: 'O coelhinho adorava roer uma [_]enoura fresca.',
+      sentenceFull: 'O coelhinho adorava roer uma [_] fresca.',
       options: ['C', 'S', 'Ç', 'SS'],
       correct: 0,
       explanation: 'CENOURA se escreve com C (antes de E e I o C tem som de S).'
     },
     {
       word: 'pássaro',
-      sentenceItem: 'O bonito pá[ ___ ]aro azul cantava na gaiola.',
-      sentenceFull: 'O bonito [ ___ ] azul cantava na gaiola.',
+      sentenceItem: 'O bonito pá[_]aro azul cantava na gaiola.',
+      sentenceFull: 'O bonito [_] azul cantava na gaiola.',
       options: ['SS', 'S', 'Ç', 'C'],
       correct: 0,
       explanation: 'PÁSSARO se escreve com SS!'
     },
     {
       word: 'sapo',
-      sentenceItem: 'O pequeno [ ___ ]apo verde deu um salto na lagoa.',
-      sentenceFull: 'O pequeno [ ___ ] verde deu um salto na lagoa.',
+      sentenceItem: 'O pequeno [_]apo verde deu um salto na lagoa.',
+      sentenceFull: 'O pequeno [_] verde deu um salto na lagoa.',
       options: ['S', 'SS', 'C', 'Ç'],
       correct: 0,
       explanation: 'SAPO começa com S simples.'
     },
     {
       word: 'coração',
-      sentenceItem: 'Sentiu uma alegria enorme bater no cora[ ___ ]ão.',
-      sentenceFull: 'Sentiu uma alegria enorme bater no [ ___ ].',
+      sentenceItem: 'Sentiu uma alegria enorme bater no cora[_]ão.',
+      sentenceFull: 'Sentiu uma alegria enorme bater no [_].',
       options: ['Ç', 'C', 'S', 'SS'],
       correct: 0,
       explanation: 'CORAÇÃO se escreve com Ç!'
     },
     {
       word: 'cidade',
-      sentenceItem: 'A grande [ ___ ]idade tem prédios modernos e parques.',
-      sentenceFull: 'A grande [ ___ ] tem prédios modernos e parques.',
+      sentenceItem: 'A grande [_]idade tem prédios modernos e parques.',
+      sentenceFull: 'A grande [_] tem prédios modernos e parques.',
       options: ['C', 'S', 'Ç', 'SS'],
       correct: 0,
       explanation: 'CIDADE se escreve com C!'
     },
     {
       word: 'osso',
-      sentenceItem: 'O cachorro enterrou um saboroso o[ ___ ]o no jardim.',
-      sentenceFull: 'O cachorro enterrou um saboroso [ ___ ] no jardim.',
+      sentenceItem: 'O cachorro enterrou um saboroso o[_]o no jardim.',
+      sentenceFull: 'O cachorro enterrou um saboroso [_] no jardim.',
       options: ['SS', 'S', 'Ç', 'C'],
       correct: 0,
       explanation: 'OSSO se escreve com SS!'
     },
     {
       word: 'abraço',
-      sentenceItem: 'Dei um forte abra[ ___ ]o de carinho no meu irmão.',
-      sentenceFull: 'Dei um forte [ ___ ] de carinho no meu irmão.',
+      sentenceItem: 'Dei um forte abra[_]o de carinho no meu irmão.',
+      sentenceFull: 'Dei um forte [_] de carinho no meu irmão.',
       options: ['Ç', 'C', 'S', 'SS'],
       correct: 0,
       explanation: 'ABRAÇO se escreve com Ç!'
@@ -568,80 +569,80 @@ const QUESTIONS_DATA = {
   acento_grafico: [
     {
       word: 'café',
-      sentenceItem: 'Vovô toma um caf[ ___ ] quente todas as manhãs.',
-      sentenceFull: 'Vovô toma um [ ___ ] quente todas as manhãs.',
+      sentenceItem: 'Vovô toma um caf[_] quente todas as manhãs.',
+      sentenceFull: 'Vovô toma um [_] quente todas as manhãs.',
       options: ['É', 'E'],
       correct: 0,
       explanation: 'CAFÉ leva acento agudo no É por ser oxítona aberta!'
     },
     {
       word: 'árvore',
-      sentenceItem: 'A alta [ ___ ]rvore centenária dava sombra no quintal.',
-      sentenceFull: 'A alta [ ___ ] centenária dava sombra no quintal.',
+      sentenceItem: 'A alta [_]rvore centenária dava sombra no quintal.',
+      sentenceFull: 'A alta [_] centenária dava sombra no quintal.',
       options: ['Á', 'A'],
       correct: 0,
       explanation: 'ÁRVORE leva acento agudo no Á por ser proparoxítona!'
     },
     {
       word: 'lâmpada',
-      sentenceItem: 'Acendi a l[ ___ ]mpada para ler meu livro à noite.',
-      sentenceFull: 'Acendi a [ ___ ] para ler meu livro à noite.',
+      sentenceItem: 'Acendi a l[_]mpada para ler meu livro à noite.',
+      sentenceFull: 'Acendi a [_] para ler meu livro à noite.',
       options: ['Â', 'A'],
       correct: 0,
       explanation: 'LÂMPADA leva acento circunflexo (Â) por ter som fechado e nasal!'
     },
     {
       word: 'ônibus',
-      sentenceItem: 'Os passageiros embarcaram no [ ___ ]nibus amarelo.',
-      sentenceFull: 'Os passageiros embarcaram no [ ___ ] amarelo.',
+      sentenceItem: 'Os passageiros embarcaram no [_]nibus amarelo.',
+      sentenceFull: 'Os passageiros embarcaram no [_] amarelo.',
       options: ['Ô', 'O'],
       correct: 0,
       explanation: 'ÔNIBUS leva acento circunflexo (Ô)!'
     },
     {
       word: 'picolé',
-      sentenceItem: 'Comprei um picol[ ___ ] de morango na sorveteria.',
-      sentenceFull: 'Comprei um [ ___ ] de morango na sorveteria.',
+      sentenceItem: 'Comprei um picol[_] de morango na sorveteria.',
+      sentenceFull: 'Comprei um [_] de morango na sorveteria.',
       options: ['É', 'E'],
       correct: 0,
       explanation: 'PICOLÉ leva acento agudo no É!'
     },
     {
       word: 'mágico',
-      sentenceItem: 'O incrível m[ ___ ]gico fez truques surpreendentes.',
-      sentenceFull: 'O incrível [ ___ ] fez truques surpreendentes.',
+      sentenceItem: 'O incrível m[_]gico fez truques surpreendentes.',
+      sentenceFull: 'O incrível [_] fez truques surpreendentes.',
       options: ['Á', 'A'],
       correct: 0,
       explanation: 'MÁGICO leva acento agudo no Á!'
     },
     {
       word: 'vovô',
-      sentenceItem: 'O vov[ ___ ] contou uma história divertida para nós.',
-      sentenceFull: 'O [ ___ ] contou uma história divertida para nós.',
+      sentenceItem: 'O vov[_] contou uma história divertida para nós.',
+      sentenceFull: 'O [_] contou uma história divertida para nós.',
       options: ['Ô', 'O'],
       correct: 0,
       explanation: 'VOVÔ tem som fechado e leva acento circunflexo!'
     },
     {
       word: 'vovó',
-      sentenceItem: 'A vov[ ___ ] fez um bolo de chocolate delicioso.',
-      sentenceFull: 'A [ ___ ] fez um bolo de chocolate delicioso.',
+      sentenceItem: 'A vov[_] fez um bolo de chocolate delicioso.',
+      sentenceFull: 'A [_] fez um bolo de chocolate delicioso.',
       options: ['Ó', 'O'],
       correct: 0,
       explanation: 'VOVÓ tem som aberto e leva acento agudo!'
     },
     {
       word: 'rápido',
-      sentenceItem: 'O atleta correu muito r[ ___ ]pido e venceu a prova.',
-      sentenceFull: 'O atleta correu muito [ ___ ] e venceu a prova.',
+      sentenceItem: 'O atleta correu muito r[_]pido e venceu a prova.',
+      sentenceFull: 'O atleta correu muito [_] e venceu a prova.',
       options: ['Á', 'A'],
       correct: 0,
       explanation: 'RÁPIDO leva acento agudo no Á!'
     },
     {
       word: 'música',
-      sentenceItem: 'A linda m[ ___ ]sica alegrava todo o ambiente.',
-      sentenceFull: 'A linda [ ___ ] alegrava todo o ambiente.',
+      sentenceItem: 'A linda m[_]sica alegrava todo o ambiente.',
+      sentenceFull: 'A linda [_] alegrava todo o ambiente.',
       options: ['Ú', 'U'],
       correct: 0,
       explanation: 'MÚSICA leva acento agudo no Ú!'
@@ -1921,13 +1922,20 @@ class UIController {
   }
 
   getMaskedParts(sentenceStr) {
-    if (!sentenceStr) return { prefix: '', gapText: '[ ___ ]', suffix: '' };
+    if (!sentenceStr) return { prefix: '', gapText: '[_]', suffix: '' };
     
-    if (sentenceStr.includes('[ ___ ]')) {
+    if (sentenceStr.includes('[_]')) {
+      const parts = sentenceStr.split('[_]');
+      return {
+        prefix: parts[0] || '',
+        gapText: '[_]',
+        suffix: parts[1] || ''
+      };
+    } else if (sentenceStr.includes('[ ___ ]')) {
       const parts = sentenceStr.split('[ ___ ]');
       return {
         prefix: parts[0] || '',
-        gapText: '[ ___ ]',
+        gapText: '[_]',
         suffix: parts[1] || ''
       };
     }
@@ -1972,10 +1980,43 @@ class UIController {
 
     const sentenceEl = document.querySelector('.game-sentence');
     if (sentenceEl) {
-      const { prefix, gapText, suffix } = this.getMaskedParts(question.sentenceItem || question.sentence);
+      const sentenceStr = question.sentenceItem || question.sentence || '';
+      
+      let beforeText = '';
+      let targetPrefix = '';
+      let targetSuffix = '';
+      let afterText = '';
+
+      if (sentenceStr.includes('[_]') || sentenceStr.includes('[ ___ ]')) {
+        const gapToken = '===GAP===';
+        const norm = sentenceStr.replace(/\[\_\]/g, gapToken).replace(/\[ ___ \]/g, gapToken);
+        const parts = norm.split(gapToken);
+
+        const leftStr = parts[0] || '';
+        const rightStr = parts[1] || '';
+
+        const lastSpaceLeft = leftStr.lastIndexOf(' ');
+        if (lastSpaceLeft !== -1) {
+          beforeText = leftStr.substring(0, lastSpaceLeft + 1);
+          targetPrefix = leftStr.substring(lastSpaceLeft + 1);
+        } else {
+          targetPrefix = leftStr;
+        }
+
+        const firstSpaceRight = rightStr.indexOf(' ');
+        if (firstSpaceRight !== -1) {
+          targetSuffix = rightStr.substring(0, firstSpaceRight);
+          afterText = rightStr.substring(firstSpaceRight);
+        } else {
+          targetSuffix = rightStr;
+        }
+      } else {
+        beforeText = sentenceStr;
+      }
+
       sentenceEl.innerHTML = `
-        <div style="font-size: 1.35rem !important; color: #FFFFFF !important; font-weight: 700 !important; line-height: 1.7 !important; text-align: center !important;">
-          ${prefix}<span class="gap-highlight" style="display: inline-block !important; min-width: 50px !important; padding: 4px 14px !important; background: rgba(56,189,248,0.25) !important; border: 2.5px dashed #38BDF8 !important; border-radius: 12px !important; color: #34D399 !important; font-weight: 900 !important; text-align: center !important; margin: 0 4px !important;">[ ___ ]</span>${suffix}
+        <div style="font-size: 1.4rem !important; color: #FFFFFF !important; font-weight: 800 !important; line-height: 2.2 !important; word-spacing: 8px !important; letter-spacing: 0.5px !important; text-align: center !important;">
+          ${beforeText}<span class="target-word-highlight">${targetPrefix}<span class="gap-highlight">[_]</span>${targetSuffix}</span>${afterText}
         </div>
       `;
     }
@@ -2107,13 +2148,13 @@ class UIController {
     this.userMatrixAnswers = Array(matrixData.questions.length).fill('');
 
     sentencesContainer.innerHTML = matrixData.questions.map((q, idx) => {
-      const sentenceText = q.sentenceFull || `O [ ___ ] faz parte do desafio.`;
+      const sentenceText = q.sentenceFull || `O [_] faz parte do desafio.`;
       const { prefix, gapText, suffix } = this.getMaskedParts(sentenceText);
 
       return `
         <div class="matrix-sentence-box" data-index="${idx}" style="background: #020617 !important; border: 2px solid #38BDF8 !important; border-radius: 18px !important; padding: 20px 24px !important; margin-bottom: 16px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;">
           <div style="font-size: 0.85rem !important; color: #F59E0B !important; font-weight: 800 !important; font-family: var(--font-heading) !important; margin-bottom: 8px !important;">FRASE ${idx + 1}:</div>
-          <div style="font-size: 1.2rem !important; color: #FFFFFF !important; font-weight: 700 !important; line-height: 1.7 !important; font-family: var(--font-body) !important;">
+          <div style="font-size: 1.2rem !important; color: #FFFFFF !important; font-weight: 700 !important; line-height: 2.0 !important; word-spacing: 6px !important; font-family: var(--font-body) !important;">
             ${prefix} <span class="matrix-slot" data-index="${idx}" style="display: inline-block !important; min-width: 140px !important; padding: 8px 18px !important; background: rgba(56,189,248,0.2) !important; border: 2.5px dashed #38BDF8 !important; border-radius: 14px !important; color: #34D399 !important; font-weight: 900 !important; text-align: center !important; cursor: pointer !important; transition: all 0.2s ease !important;">[ Clique no banco... ]</span> ${suffix}
           </div>
         </div>

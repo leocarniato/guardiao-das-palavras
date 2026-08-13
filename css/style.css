@@ -575,7 +575,7 @@ body {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
 }
 
-/* Frase da Pergunta */
+/* Frase da Pergunta com maior espaçamento de leitura */
 .sentence-container {
   background: #020617 !important;
   border: 2.5px solid #38BDF8 !important;
@@ -588,28 +588,45 @@ body {
 
 .game-sentence {
   font-family: var(--font-body) !important;
-  font-size: 1.65rem !important;
-  line-height: 1.8 !important;
+  font-size: 1.4rem !important;
+  line-height: 2.2 !important;
+  word-spacing: 8px !important;
+  letter-spacing: 0.5px !important;
   color: #FFFFFF !important;
   font-weight: 800 !important;
   margin-bottom: 20px !important;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9) !important;
 }
 
-/* Lacuna Dourada */
-.gap-placeholder {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
-  color: #FFFFFF !important;
-  font-family: var(--font-heading) !important;
-  font-weight: 900 !important;
-  font-size: 1.35rem !important;
-  padding: 8px 26px !important;
+/* Destaque para a Palavra Alvo com Lacuna Compacta [_] */
+.target-word-highlight {
+  display: inline-flex !important;
+  align-items: center !important;
+  background: rgba(253, 224, 71, 0.18) !important;
+  border: 2.5px solid #F59E0B !important;
+  padding: 4px 14px !important;
   border-radius: 16px !important;
-  display: inline-block !important;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.7) !important;
-  border: 2.5px solid #FBBF24 !important;
-  letter-spacing: 2px !important;
+  color: #FDE047 !important;
+  font-weight: 900 !important;
+  font-size: 1.5rem !important;
+  letter-spacing: 1px !important;
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.4) !important;
   margin: 0 6px !important;
+  vertical-align: middle !important;
+}
+
+.gap-highlight {
+  display: inline-block !important;
+  min-width: 32px !important;
+  padding: 2px 8px !important;
+  background: rgba(56, 189, 248, 0.3) !important;
+  border: 2px dashed #38BDF8 !important;
+  border-radius: 10px !important;
+  color: #34D399 !important;
+  font-weight: 900 !important;
+  font-size: 1.25rem !important;
+  text-align: center !important;
+  margin: 0 4px !important;
 }
 
 .audio-pronunciation-box {
