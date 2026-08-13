@@ -117,9 +117,27 @@ export class GameEngine {
     this.profilesData = this.loadProfilesData();
     this.activeProfileId = this.profilesData.activeProfileId || null;
     
-    this.playerData = (this.activeProfileId && this.profilesData.profiles[this.activeProfileId])
+    this.playerData = (this.activeProfileId && this.profilesData.profiles && this.profilesData.profiles[this.activeProfileId])
       ? this.profilesData.profiles[this.activeProfileId]
       : null;
+
+    // Se ainda não existir perfil ativo, pega o primeiro perfil disponível ou cria o perfil inicial 'Pedro'
+    if (!this.playerData) {
+      const existingProfiles = Object.values(this.profilesData.profiles || {});
+      if (existingProfiles.length > 0) {
+        this.activeProfileId = existingProfiles[0].id;
+        this.playerData = existingProfiles[0];
+        this.profilesData.activeProfileId = this.activeProfileId;
+      } else {
+        const defaultProfile = this.createDefaultPlayerData('Pedro');
+        defaultProfile.id = 'pedro';
+        if (!this.profilesData.profiles) this.profilesData.profiles = {};
+        this.profilesData.profiles['pedro'] = defaultProfile;
+        this.activeProfileId = 'pedro';
+        this.playerData = defaultProfile;
+        this.savePlayerData();
+      }
+    }
 
     // Estado da partida atual
     this.currentCategory = null;
@@ -601,19 +619,21 @@ export class GameEngine {
   }
 
   getMascots() {
+    const playerData = this.playerData || { unlockedMascots: ['aranha'], activeMascot: 'aranha', coins: 0 };
     return MASCOTS.map(mascot => {
-      const isUnlocked = (this.playerData.unlockedMascots || []).includes(mascot.id);
-      const isActive = this.playerData.activeMascot === mascot.id;
+      const isUnlocked = (playerData.unlockedMascots || []).includes(mascot.id);
+      const isActive = (playerData.activeMascot || 'aranha') === mascot.id;
       return {
         ...mascot,
         unlocked: isUnlocked,
         active: isActive,
-        canAfford: this.playerData.coins >= mascot.price
+        canAfford: (playerData.coins || 0) >= mascot.price
       };
     });
   }
 
   buyMascot(mascotId) {
+    if (!this.playerData) return { success: false, message: 'Perfil não selecionado!' };
     const mascot = MASCOTS.find(m => m.id === mascotId);
     if (!mascot) return { success: false, message: 'Mascote não encontrado!' };
 
@@ -621,7 +641,7 @@ export class GameEngine {
       return { success: false, message: 'Mascote já desbloqueado!' };
     }
 
-    if (this.playerData.coins < mascot.price) {
+    if ((this.playerData.coins || 0) < mascot.price) {
       return { success: false, message: 'Moedas insuficientes!' };
     }
 
@@ -635,7 +655,9 @@ export class GameEngine {
   }
 
   selectMascot(mascotId) {
-    if (!this.playerData.unlockedMascots.includes(mascotId)) {
+    if (!this.playerData) return false;
+    const unlocked = this.playerData.unlockedMascots || ['aranha'];
+    if (!unlocked.includes(mascotId)) {
       return false;
     }
     this.playerData.activeMascot = mascotId;
@@ -644,7 +666,7 @@ export class GameEngine {
   }
 
   getActiveMascot() {
-    const activeId = this.playerData.activeMascot || 'aranha';
+    const activeId = (this.playerData && this.playerData.activeMascot) ? this.playerData.activeMascot : 'aranha';
     return MASCOTS.find(m => m.id === activeId) || MASCOTS[0];
   }
 

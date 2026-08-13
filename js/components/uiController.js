@@ -103,11 +103,18 @@ export class UIController {
 
     // Atualiza Imagem do Mascote no Menu Principal Hero Section
     const heroMascotContainer = document.querySelector('.hero-mascot-container');
-    if (heroMascotContainer && activeMascot.img) {
-      heroMascotContainer.innerHTML = `
-        <img class="hero-mascot-real-img" src="${activeMascot.img}" alt="${activeMascot.name}" />
-        <span class="hero-sparkles">⚡</span>
-      `;
+    if (heroMascotContainer && activeMascot) {
+      if (activeMascot.img) {
+        heroMascotContainer.innerHTML = `
+          <img class="hero-mascot-real-img" src="${activeMascot.img}" alt="${activeMascot.name}" />
+          <span class="hero-sparkles">⚡</span>
+        `;
+      } else {
+        heroMascotContainer.innerHTML = `
+          <span class="hero-mascot-icon">${activeMascot.icon || '🕷️'}</span>
+          <span class="hero-sparkles">⚡</span>
+        `;
+      }
     }
   }
 

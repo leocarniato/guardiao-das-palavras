@@ -255,7 +255,19 @@ body {
   font-size: 5rem;
   margin-bottom: 16px;
   animation: floatMascot 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 25px var(--cyan-neon));
+  filter: drop-shadow(0 0 25px var(--neon-glow, #38BDF8));
+}
+
+.hero-mascot-real-img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  border: 3px solid var(--neon-glow, #38BDF8);
+  box-shadow: 0 0 30px var(--neon-glow, rgba(56,189,248,0.6));
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .hero-title {
